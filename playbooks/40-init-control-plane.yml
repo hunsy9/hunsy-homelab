@@ -1,0 +1,105 @@
+---
+- name: Initialize kubeadm control plane
+  hosts: control_plane
+  gather_facts: false
+
+  vars:
+    kubeadm_init_config_path: /etc/kubernetes/kubeadm-init.yaml
+    kubeadm_admin_conf_path: /etc/kubernetes/admin.conf
+    kubeadm_kubernetes_version: v1.34.12
+
+  tasks:
+    - name: Ensure containerd is active before kubeadm init
+      ansible.builtin.command: systemctl is-active containerd
+      register: containerd_active
+      changed_when: false
+      check_mode: false
+
+    - name: Stop if containerd is not active
+      ansible.builtin.assert:
+        that:
+          - containerd_active.stdout == 'active'
+        fail_msg: "containerd must be active before running kubeadm init."
+
+    - name: Check swap status before kubeadm init
+      ansible.builtin.command: swapon --show --noheadings
+      register: active_swap
+      changed_when: false
+      check_mode: false
+
+    - name: Stop if swap is active
+      ansible.builtin.assert:
+        that:
+          - active_swap.stdout | length == 0
+        fail_msg: "Swap must be disabled before running kubeadm init."
+
+    - name: Write kubeadm init configuration
+      ansible.builtin.copy:
+        dest: "{{ kubeadm_init_config_path }}"
+        owner: root
+        group: root
+        mode: '0644'
+        content: |
+          apiVersion: kubeadm.k8s.io/v1beta4
+          kind: InitConfiguration
+          localAPIEndpoint:
+            advertiseAddress: {{ node_ip }}
+            bindPort: 6443
+          nodeRegistration:
+            name: {{ node_hostname }}
+            criSocket: unix:///var/run/containerd/containerd.sock
+          ---
+          apiVersion: kubeadm.k8s.io/v1beta4
+          kind: ClusterConfiguration
+          clusterName: {{ cluster_name }}
+          kubernetesVersion: {{ kubeadm_kubernetes_version }}
+          controlPlaneEndpoint: "{{ kubernetes_control_plane_endpoint }}:6443"
+          apiServer:
+            certSANs:
+          {% for san in kubernetes_control_plane_cert_sans %}
+              - {{ san }}
+          {% endfor %}
+          networking:
+            podSubnet: {{ kubernetes_pod_cidr }}
+            serviceSubnet: {{ kubernetes_service_cidr }}
+            dnsDomain: cluster.local
+          ---
+          apiVersion: kubelet.config.k8s.io/v1beta1
+          kind: KubeletConfiguration
+          cgroupDriver: systemd
+
+    - name: Initialize Kubernetes control plane with kubeadm
+      ansible.builtin.command: "kubeadm init --config {{ kubeadm_init_config_path }}"
+      args:
+        creates: "{{ kubeadm_admin_conf_path }}"
+      register: kubeadm_init
+
+    - name: Create root kubeconfig directory
+      ansible.builtin.file:
+        path: /root/.kube
+        state: directory
+        owner: root
+        group: root
+        mode: '0700'
+      when: not ansible_check_mode
+
+    - name: Install admin kubeconfig for root
+      ansible.builtin.copy:
+        src: "{{ kubeadm_admin_conf_path }}"
+        dest: /root/.kube/config
+        remote_src: true
+        owner: root
+        group: root
+        mode: '0600'
+      when: not ansible_check_mode
+
+    - name: Show control plane node status
+      ansible.builtin.command: kubectl --kubeconfig {{ kubeadm_admin_conf_path }} get nodes -o wide
+      register: control_plane_nodes
+      changed_when: false
+      when: not ansible_check_mode
+
+    - name: Display control plane node status
+      ansible.builtin.debug:
+        var: control_plane_nodes.stdout_lines
+      when: not ansible_check_mode
