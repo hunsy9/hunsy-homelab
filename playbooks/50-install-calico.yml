@@ -1,0 +1,122 @@
+---
+- name: Install Calico CNI with IPIP encapsulation
+  hosts: control_plane
+  gather_facts: false
+
+  vars:
+    kubeconfig_path: /etc/kubernetes/admin.conf
+    calico_version: v3.32.2
+    calico_remote_dir: /root/kubeadm-calico
+    calico_operator_manifest: "{{ calico_remote_dir }}/tigera-operator.yaml"
+    calico_custom_resources_manifest: "{{ calico_remote_dir }}/custom-resources.yaml"
+
+  tasks:
+    - name: Ensure kubeadm admin kubeconfig exists
+      ansible.builtin.stat:
+        path: "{{ kubeconfig_path }}"
+      register: kubeconfig_file
+
+    - name: Stop if control plane is not initialized
+      ansible.builtin.assert:
+        that:
+          - kubeconfig_file.stat.exists
+        fail_msg: "Kubeadm admin kubeconfig is missing. Run playbooks/40-init-control-plane.yml first."
+
+    - name: Create Calico manifest directory on control plane
+      ansible.builtin.file:
+        path: "{{ calico_remote_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Copy Calico operator manifest
+      ansible.builtin.copy:
+        src: ../cluster/kubeadm/calico/tigera-operator.yaml
+        dest: "{{ calico_operator_manifest }}"
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Copy Calico custom resources manifest
+      ansible.builtin.copy:
+        src: ../cluster/kubeadm/calico/custom-resources.yaml
+        dest: "{{ calico_custom_resources_manifest }}"
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Apply Calico operator manifest
+      ansible.builtin.command: "kubectl --kubeconfig {{ kubeconfig_path }} apply -f {{ calico_operator_manifest }}"
+      register: calico_operator_apply
+      changed_when: "'created' in calico_operator_apply.stdout or 'configured' in calico_operator_apply.stdout"
+      when: not ansible_check_mode
+
+    - name: Wait until Calico installation CRD exists
+      ansible.builtin.command: "kubectl --kubeconfig {{ kubeconfig_path }} get crd installations.operator.tigera.io"
+      register: calico_installation_crd
+      changed_when: false
+      retries: 30
+      delay: 5
+      until: calico_installation_crd.rc == 0
+      when: not ansible_check_mode
+
+    - name: Wait for Calico installation CRD to be established
+      ansible.builtin.command: "kubectl --kubeconfig {{ kubeconfig_path }} wait --for condition=Established crd/installations.operator.tigera.io --timeout=120s"
+      changed_when: false
+      when: not ansible_check_mode
+
+    - name: Apply Calico custom resources
+      ansible.builtin.command: "kubectl --kubeconfig {{ kubeconfig_path }} apply -f {{ calico_custom_resources_manifest }}"
+      register: calico_custom_resources_apply
+      changed_when: "'created' in calico_custom_resources_apply.stdout or 'configured' in calico_custom_resources_apply.stdout"
+      when: not ansible_check_mode
+
+    - name: Wait until calico-system namespace exists
+      ansible.builtin.command: "kubectl --kubeconfig {{ kubeconfig_path }} get namespace calico-system"
+      register: calico_system_namespace
+      changed_when: false
+      retries: 30
+      delay: 5
+      until: calico_system_namespace.rc == 0
+      when: not ansible_check_mode
+
+    - name: Wait until Calico pods exist
+      ansible.builtin.command: "kubectl --kubeconfig {{ kubeconfig_path }} get pods -n calico-system --no-headers"
+      register: calico_system_pods
+      changed_when: false
+      retries: 30
+      delay: 5
+      until:
+        - calico_system_pods.rc == 0
+        - calico_system_pods.stdout | length > 0
+      when: not ansible_check_mode
+
+    - name: Wait for Calico pods to become ready
+      ansible.builtin.command: "kubectl --kubeconfig {{ kubeconfig_path }} wait --for=condition=Ready pods --all -n calico-system --timeout=600s"
+      changed_when: false
+      when: not ansible_check_mode
+
+    - name: Wait for cluster nodes to become ready
+      ansible.builtin.command: "kubectl --kubeconfig {{ kubeconfig_path }} wait --for=condition=Ready nodes --all --timeout=300s"
+      changed_when: false
+      when: not ansible_check_mode
+
+    - name: Show Calico pods
+      ansible.builtin.command: "kubectl --kubeconfig {{ kubeconfig_path }} get pods -n calico-system -o wide"
+      register: calico_pods
+      changed_when: false
+      when: not ansible_check_mode
+
+    - name: Show cluster nodes
+      ansible.builtin.command: "kubectl --kubeconfig {{ kubeconfig_path }} get nodes -o wide"
+      register: cluster_nodes
+      changed_when: false
+      when: not ansible_check_mode
+
+    - name: Display Calico status
+      ansible.builtin.debug:
+        msg:
+          calico_pods: "{{ calico_pods.stdout_lines }}"
+          cluster_nodes: "{{ cluster_nodes.stdout_lines }}"
+      when: not ansible_check_mode

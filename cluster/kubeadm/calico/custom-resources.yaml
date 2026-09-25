@@ -1,0 +1,21 @@
+# Calico operator custom resources for the kubeadm learning cluster.
+# Pod CIDR must match inventories/lab/group_vars/all.yml:kubernetes_pod_cidr.
+apiVersion: operator.tigera.io/v1
+kind: Installation
+metadata:
+  name: default
+spec:
+  calicoNetwork:
+    ipPools:
+      - name: default-ipv4-ippool
+        blockSize: 26
+        cidr: 10.244.0.0/16
+        encapsulation: IPIP
+        natOutgoing: Enabled
+        nodeSelector: all()
+---
+apiVersion: operator.tigera.io/v1
+kind: APIServer
+metadata:
+  name: default
+spec: {}
