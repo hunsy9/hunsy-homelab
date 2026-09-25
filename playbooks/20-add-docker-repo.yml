@@ -1,0 +1,28 @@
+---
+- name: Add Docker CE repository for containerd packages
+  hosts: all
+  gather_facts: false
+
+  vars:
+    docker_repo_url: https://download.docker.com/linux/rhel/docker-ce.repo
+    docker_repo_path: /etc/yum.repos.d/docker-ce.repo
+
+  tasks:
+    - name: Ensure CA certificates are installed
+      ansible.builtin.dnf:
+        name: ca-certificates
+        state: present
+
+    - name: Install Docker CE repository file
+      ansible.builtin.get_url:
+        url: "{{ docker_repo_url }}"
+        dest: "{{ docker_repo_path }}"
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Check whether containerd.io package is visible
+      ansible.builtin.command: dnf list containerd.io
+      register: containerd_package_query
+      changed_when: false
+      when: not ansible_check_mode
