@@ -1,0 +1,100 @@
+---
+- name: Join kubeadm worker nodes
+  hosts: workers
+  gather_facts: false
+
+  vars:
+    kubelet_conf_path: /etc/kubernetes/kubelet.conf
+    kubeadm_join_token_ttl: 30m
+
+  tasks:
+    - name: Ensure containerd is active before kubeadm join
+      ansible.builtin.command: systemctl is-active containerd
+      register: containerd_active
+      changed_when: false
+      check_mode: false
+
+    - name: Stop if containerd is not active
+      ansible.builtin.assert:
+        that:
+          - containerd_active.stdout == 'active'
+        fail_msg: "containerd must be active before running kubeadm join."
+
+    - name: Check swap status before kubeadm join
+      ansible.builtin.command: swapon --show --noheadings
+      register: active_swap
+      changed_when: false
+      check_mode: false
+
+    - name: Stop if swap is active
+      ansible.builtin.assert:
+        that:
+          - active_swap.stdout | length == 0
+        fail_msg: "Swap must be disabled before running kubeadm join."
+
+    - name: Check whether worker is already joined
+      ansible.builtin.stat:
+        path: "{{ kubelet_conf_path }}"
+      register: kubelet_conf
+
+    - name: Create kubeadm join command on control plane
+      ansible.builtin.command: "kubeadm token create --print-join-command --ttl {{ kubeadm_join_token_ttl }}"
+      register: kubeadm_join_command
+      changed_when: false
+      delegate_to: "{{ groups['control_plane'][0] }}"
+      run_once: true
+      no_log: true
+      when:
+        - not ansible_check_mode
+        - not kubelet_conf.stat.exists
+
+    - name: Join worker to Kubernetes cluster
+      ansible.builtin.command: "{{ kubeadm_join_command.stdout }} --node-name {{ node_hostname }} --cri-socket unix:///var/run/containerd/containerd.sock"
+      args:
+        creates: "{{ kubelet_conf_path }}"
+      no_log: true
+      when:
+        - not ansible_check_mode
+        - not kubelet_conf.stat.exists
+
+- name: Verify joined worker nodes from control plane
+  hosts: control_plane
+  gather_facts: false
+
+  vars:
+    kubeconfig_path: /etc/kubernetes/admin.conf
+
+  tasks:
+    - name: Wait for all worker nodes to be registered
+      ansible.builtin.command: "kubectl --kubeconfig {{ kubeconfig_path }} get node {{ hostvars[item].node_hostname }}"
+      register: worker_node_registration
+      changed_when: false
+      retries: 30
+      delay: 5
+      until: worker_node_registration.rc == 0
+      loop: "{{ groups['workers'] }}"
+      when: not ansible_check_mode
+
+    - name: Wait for all nodes to become ready
+      ansible.builtin.command: "kubectl --kubeconfig {{ kubeconfig_path }} wait --for=condition=Ready nodes --all --timeout=300s"
+      changed_when: false
+      when: not ansible_check_mode
+
+    - name: Show cluster nodes
+      ansible.builtin.command: "kubectl --kubeconfig {{ kubeconfig_path }} get nodes -o wide"
+      register: cluster_nodes
+      changed_when: false
+      when: not ansible_check_mode
+
+    - name: Show kube-system pods
+      ansible.builtin.command: "kubectl --kubeconfig {{ kubeconfig_path }} get pods -n kube-system -o wide"
+      register: kube_system_pods
+      changed_when: false
+      when: not ansible_check_mode
+
+    - name: Display cluster status after worker join
+      ansible.builtin.debug:
+        msg:
+          nodes: "{{ cluster_nodes.stdout_lines }}"
+          kube_system_pods: "{{ kube_system_pods.stdout_lines }}"
+      when: not ansible_check_mode
