@@ -1,0 +1,32 @@
+---
+- name: Add Kubernetes yum repository
+  hosts: all
+  gather_facts: false
+
+  vars:
+    kubernetes_minor_version: v1.34
+    kubernetes_repo_path: /etc/yum.repos.d/kubernetes.repo
+    kubernetes_repo_baseurl: "https://pkgs.k8s.io/core:/stable:/{{ kubernetes_minor_version }}/rpm/"
+    kubernetes_repo_gpgkey: "https://pkgs.k8s.io/core:/stable:/{{ kubernetes_minor_version }}/rpm/repodata/repomd.xml.key"
+
+  tasks:
+    - name: Install Kubernetes yum repository
+      ansible.builtin.copy:
+        dest: "{{ kubernetes_repo_path }}"
+        owner: root
+        group: root
+        mode: '0644'
+        content: |
+          [kubernetes]
+          name=Kubernetes {{ kubernetes_minor_version }}
+          baseurl={{ kubernetes_repo_baseurl }}
+          enabled=1
+          gpgcheck=1
+          gpgkey={{ kubernetes_repo_gpgkey }}
+          exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
+
+    - name: Check whether Kubernetes packages are visible
+      ansible.builtin.command: dnf list kubelet kubeadm kubectl --disableexcludes=kubernetes
+      register: kubernetes_package_query
+      changed_when: false
+      when: not ansible_check_mode
