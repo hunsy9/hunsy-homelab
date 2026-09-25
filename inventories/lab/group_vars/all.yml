@@ -1,0 +1,18 @@
+---
+homelab_domain: hunsy.local
+cluster_name: hunsy-homelab
+
+# Current kubeadm learning cluster plan. RKE2 will replace this later.
+kubernetes_pod_cidr: 10.244.0.0/16
+kubernetes_service_cidr: 10.96.0.0/12
+kubernetes_control_plane_endpoint: 192.168.0.150
+
+managed_hosts:
+  - ip: 192.168.0.150
+    names:
+      - k8s-control-01
+      - controller
+  - ip: 192.168.0.24
+    names:
+      - k8s-worker-01
+      - az

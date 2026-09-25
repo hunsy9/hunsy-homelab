@@ -1,0 +1,32 @@
+---
+- name: Verify homelab nodes are reachable and match inventory
+  hosts: all
+  gather_facts: true
+
+  tasks:
+    - name: Assert expected hostname
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.hostname == node_hostname
+        fail_msg: "Expected hostname {{ node_hostname }}, got {{ ansible_facts.hostname }}"
+
+    - name: Assert SELinux is enforcing
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.selinux.status == 'enabled'
+          - ansible_facts.selinux.mode == 'enforcing'
+
+    - name: Assert swap is disabled
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.swaptotal_mb == 0
+
+    - name: Show node summary
+      ansible.builtin.debug:
+        msg:
+          hostname: "{{ ansible_facts.hostname }}"
+          ip: "{{ node_ip }}"
+          role: "{{ node_role }}"
+          os: "{{ ansible_facts.distribution }} {{ ansible_facts.distribution_version }}"
+          kernel: "{{ ansible_facts.kernel }}"
+          memory_mb: "{{ ansible_facts.memtotal_mb }}"
