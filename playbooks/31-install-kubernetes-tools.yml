@@ -1,0 +1,60 @@
+---
+- name: Install kubeadm, kubelet, and kubectl
+  hosts: all
+  gather_facts: false
+
+  vars:
+    kubernetes_repo_path: /etc/yum.repos.d/kubernetes.repo
+
+  tasks:
+    - name: Ensure Kubernetes yum repository is already configured
+      ansible.builtin.stat:
+        path: "{{ kubernetes_repo_path }}"
+      register: kubernetes_repo_file
+
+    - name: Stop if Kubernetes yum repository is missing
+      ansible.builtin.assert:
+        that:
+          - kubernetes_repo_file.stat.exists
+        fail_msg: "Kubernetes repository is missing. Run playbooks/30-add-kubernetes-repo.yml first."
+
+    - name: Install Kubernetes node tools
+      ansible.builtin.dnf:
+        name:
+          - kubelet
+          - kubeadm
+          - kubectl
+        state: present
+        disable_excludes: kubernetes
+
+    - name: Enable kubelet service
+      ansible.builtin.systemd:
+        name: kubelet
+        enabled: true
+      when: not ansible_check_mode
+
+    - name: Check kubeadm version
+      ansible.builtin.command: kubeadm version -o short
+      register: kubeadm_version
+      changed_when: false
+      when: not ansible_check_mode
+
+    - name: Check kubelet version
+      ansible.builtin.command: kubelet --version
+      register: kubelet_version
+      changed_when: false
+      when: not ansible_check_mode
+
+    - name: Check kubectl version
+      ansible.builtin.command: kubectl version --client=true
+      register: kubectl_version
+      changed_when: false
+      when: not ansible_check_mode
+
+    - name: Show installed Kubernetes tool versions
+      ansible.builtin.debug:
+        msg:
+          kubeadm: "{{ kubeadm_version.stdout }}"
+          kubelet: "{{ kubelet_version.stdout }}"
+          kubectl: "{{ kubectl_version.stdout_lines[0] }}"
+      when: not ansible_check_mode
