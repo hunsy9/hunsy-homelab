@@ -1,0 +1,58 @@
+---
+- name: Install Tailscale client
+  hosts: all
+  gather_facts: false
+
+  vars:
+    tailscale_repo_url: https://pkgs.tailscale.com/stable/rhel/9/tailscale.repo
+    tailscale_repo_path: /etc/yum.repos.d/tailscale.repo
+
+  tasks:
+    - name: Ensure CA certificates are installed
+      ansible.builtin.dnf:
+        name: ca-certificates
+        state: present
+
+    - name: Check whether Tailscale repository file already exists
+      ansible.builtin.stat:
+        path: "{{ tailscale_repo_path }}"
+      register: tailscale_repo_file_before
+
+    - name: Install Tailscale repository file
+      ansible.builtin.get_url:
+        url: "{{ tailscale_repo_url }}"
+        dest: "{{ tailscale_repo_path }}"
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Skip package simulation when Tailscale repo is only planned in check mode
+      ansible.builtin.debug:
+        msg: "Tailscale repo is not present yet; skipping package check during --check. Apply once, then --check can verify package state."
+      when:
+        - ansible_check_mode
+        - not tailscale_repo_file_before.stat.exists
+
+    - name: Install tailscale package
+      ansible.builtin.dnf:
+        name: tailscale
+        state: present
+      when: not ansible_check_mode or tailscale_repo_file_before.stat.exists
+
+    - name: Enable and start tailscaled
+      ansible.builtin.systemd:
+        name: tailscaled
+        enabled: true
+        state: started
+      when: not ansible_check_mode
+
+    - name: Verify tailscale binary is available
+      ansible.builtin.command: tailscale version
+      register: tailscale_version
+      changed_when: false
+      when: not ansible_check_mode
+
+    - name: Show installed Tailscale version
+      ansible.builtin.debug:
+        msg: "{{ tailscale_version.stdout_lines[0] }}"
+      when: not ansible_check_mode
