@@ -1,0 +1,62 @@
+---
+- name: Open Kubernetes and Calico firewall rules
+  hosts: all
+  gather_facts: false
+
+  vars:
+    firewalld_zone: public
+    kubernetes_common_firewall_ports:
+      - 10250/tcp
+      - 179/tcp
+    kubernetes_control_plane_firewall_ports:
+      - 6443/tcp
+      - 2379-2380/tcp
+      - 10257/tcp
+      - 10259/tcp
+      - 5473/tcp
+    calico_firewall_protocols:
+      - ipip
+
+  tasks:
+    - name: Ensure firewalld is running
+      ansible.builtin.systemd:
+        name: firewalld
+        state: started
+        enabled: true
+
+    - name: Open common Kubernetes and Calico TCP ports
+      ansible.posix.firewalld:
+        zone: "{{ firewalld_zone }}"
+        port: "{{ item }}"
+        permanent: true
+        immediate: true
+        state: enabled
+      loop: "{{ kubernetes_common_firewall_ports }}"
+
+    - name: Open control plane TCP ports
+      ansible.posix.firewalld:
+        zone: "{{ firewalld_zone }}"
+        port: "{{ item }}"
+        permanent: true
+        immediate: true
+        state: enabled
+      loop: "{{ kubernetes_control_plane_firewall_ports }}"
+      when: inventory_hostname in groups['control_plane']
+
+    - name: Allow Calico IP-in-IP protocol
+      ansible.posix.firewalld:
+        zone: "{{ firewalld_zone }}"
+        protocol: "{{ item }}"
+        permanent: true
+        immediate: true
+        state: enabled
+      loop: "{{ calico_firewall_protocols }}"
+
+    - name: Show active firewalld zone rules
+      ansible.builtin.command: firewall-cmd --zone={{ firewalld_zone }} --list-all
+      register: firewalld_rules
+      changed_when: false
+
+    - name: Display firewalld rules
+      ansible.builtin.debug:
+        var: firewalld_rules.stdout_lines
