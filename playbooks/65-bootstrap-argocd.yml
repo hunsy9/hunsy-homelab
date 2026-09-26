@@ -1,0 +1,66 @@
+---
+- name: Bootstrap Argo CD and root app
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    kube_context: hunsy-kubeadm-ts
+    argocd_namespace: argocd
+    argocd_chart_version: 10.9.2
+    argocd_values_file: sites/controller/argocd/values.yaml
+    argocd_root_app_file: sites/root-app.yaml
+
+  tasks:
+    - name: Check kubectl can reach the cluster
+      ansible.builtin.command: "kubectl --context {{ kube_context }} get nodes"
+      register: kubectl_nodes
+      changed_when: false
+      check_mode: false
+
+    - name: Add Argo Helm repository
+      kubernetes.core.helm_repository:
+        name: argo
+        repo_url: https://argoproj.github.io/argo-helm
+
+    - name: Bootstrap Argo CD with Helm
+      kubernetes.core.helm:
+        name: argocd
+        chart_ref: argo/argo-cd
+        chart_version: "{{ argocd_chart_version }}"
+        release_namespace: "{{ argocd_namespace }}"
+        create_namespace: true
+        values_files:
+          - "{{ playbook_dir }}/../{{ argocd_values_file }}"
+        kube_context: "{{ kube_context }}"
+        wait: true
+        wait_timeout: 10m
+        state: present
+
+    - name: Wait for Argo CD deployments to become available
+      ansible.builtin.command: "kubectl --context {{ kube_context }} -n {{ argocd_namespace }} rollout status deployment/{{ item }} --timeout=300s"
+      loop:
+        - argocd-server
+        - argocd-repo-server
+        - argocd-applicationset-controller
+        - argocd-dex-server
+        - argocd-notifications-controller
+      changed_when: false
+
+    - name: Wait for Argo CD application controller statefulset to become available
+      ansible.builtin.command: "kubectl --context {{ kube_context }} -n {{ argocd_namespace }} rollout status statefulset/argocd-application-controller --timeout=300s"
+      changed_when: false
+
+    - name: Apply root app
+      ansible.builtin.command: "kubectl --context {{ kube_context }} apply -f {{ playbook_dir }}/../{{ argocd_root_app_file }}"
+      register: root_app_apply
+      changed_when: "'created' in root_app_apply.stdout or 'configured' in root_app_apply.stdout"
+
+    - name: Show Argo CD applications
+      ansible.builtin.command: "kubectl --context {{ kube_context }} -n {{ argocd_namespace }} get applications.argoproj.io"
+      register: argocd_apps
+      changed_when: false
+
+    - name: Display Argo CD applications
+      ansible.builtin.debug:
+        var: argocd_apps.stdout_lines
