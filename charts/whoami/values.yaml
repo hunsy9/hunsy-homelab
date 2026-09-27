@@ -21,7 +21,9 @@ httpRoute:
   enabled: true
   name: whoami
   parentRefs:
-    - name: public-gateway
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public-gateway
       namespace: gateway-system
       sectionName: http
   hostnames:
@@ -32,5 +34,8 @@ httpRoute:
             type: PathPrefix
             value: /
       backendRefs:
-        - name: whoami
+        - group: ""
+          kind: Service
+          name: whoami
           port: 80
+          weight: 1
