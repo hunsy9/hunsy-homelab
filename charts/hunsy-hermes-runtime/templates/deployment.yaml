@@ -26,9 +26,6 @@ spec:
 {{ toYaml .Values.nodeSelector | indent 8 }}
       containers:
         - name: hermes-runtime
-          envFrom:
-            - secretRef:
-                name: {{ .Values.providerKeysSecret.name | quote }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
           ports:
@@ -68,9 +65,19 @@ spec:
               mountPath: /opt/data/config.yaml
               subPath: config.yaml
               readOnly: true
+            - name: hermes-auth-json
+              mountPath: /opt/data/auth.json
+              subPath: auth.json
+              readOnly: true
           resources:
 {{ toYaml .Values.resources | indent 12 }}
       volumes:
         - name: hermes-config
           configMap:
             name: {{ .Chart.Name | quote }}
+        - name: hermes-auth-json
+          secret:
+            secretName: {{ .Values.authJsonSecret.name | quote }}
+            items:
+              - key: {{ .Values.authJsonSecret.key | quote }}
+                path: auth.json

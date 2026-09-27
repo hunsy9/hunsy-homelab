@@ -33,13 +33,14 @@ apiServerKeySecret:
   name: hermes-api-server-key
   key: key
 
-providerKeysSecret:
-  name: hermes-provider-keys
+authJsonSecret:
+  name: hermes-auth-json
+  key: auth.json
 
 hermesConfig:
   model:
-    provider: openai-api
-    default: gpt-5-mini
+    provider: openai-codex
+    default: gpt-5.5
   toolsets:
     - hermes-api-server
   terminal:
