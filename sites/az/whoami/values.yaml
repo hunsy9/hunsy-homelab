@@ -27,7 +27,7 @@ httpRoute:
       namespace: gateway-system
       sectionName: http
   hostnames:
-    - whoami.homelab.local
+    - whoami.seung.site
   rules:
     - matches:
         - path:
