@@ -1,0 +1,6 @@
+apiVersion: v2
+name: alertmanager-discord
+description: Discord webhook adapter for Alertmanager alerts
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

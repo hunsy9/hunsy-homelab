@@ -1,0 +1,30 @@
+namespace: monitoring
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/benjojo/alertmanager-discord
+  tag: latest
+  pullPolicy: IfNotPresent
+
+secret:
+  name: discord-alert-webhook
+  key: url
+
+service:
+  port: 9094
+
+nodeSelector:
+  kubernetes.io/hostname: k8s-control-01
+
+tolerations:
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    memory: 128Mi
