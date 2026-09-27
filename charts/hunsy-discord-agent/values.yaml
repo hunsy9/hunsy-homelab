@@ -1,0 +1,31 @@
+namespace:
+  create: true
+  name: hunsy-discord-agent
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/hunsy9/hunsy-discord-agent
+  tag: sha-b6696eb
+  pullPolicy: IfNotPresent
+
+imagePullSecrets:
+  - name: ghcr-pull-secret
+
+nodeSelector:
+  kubernetes.io/hostname: k8s-worker-01
+
+resources:
+  requests:
+    cpu: 20m
+    memory: 64Mi
+  limits:
+    memory: 128Mi
+
+env:
+  assetApiBaseUrl: http://hunsy-asset-platform-api.hunsy-asset-platform.svc.cluster.local
+  logLevel: INFO
+
+discordBotTokenSecret:
+  name: discord-bot-token
+  key: token
