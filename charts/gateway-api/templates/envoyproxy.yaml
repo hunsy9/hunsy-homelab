@@ -1,0 +1,23 @@
+{{- if and .Values.gateway.enabled .Values.envoyProxy.enabled }}
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: {{ .Values.gateway.infrastructure.envoyProxyName | quote }}
+  namespace: {{ .Values.gateway.namespace | quote }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+spec:
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyService:
+        type: {{ .Values.envoyProxy.service.type | quote }}
+      envoyDeployment:
+        replicas: {{ .Values.envoyProxy.deployment.replicas }}
+        pod:
+          nodeSelector:
+{{ toYaml .Values.envoyProxy.deployment.nodeSelector | indent 12 }}
+{{- end }}

@@ -1,0 +1,11 @@
+{{- if and .Values.gateway.enabled .Values.gateway.createNamespace }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.gateway.namespace | quote }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+{{- end }}

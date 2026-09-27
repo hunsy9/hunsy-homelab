@@ -1,0 +1,28 @@
+gatewayClass:
+  enabled: true
+  name: envoy-gateway
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+
+gateway:
+  enabled: true
+  name: public-gateway
+  namespace: gateway-system
+  createNamespace: true
+  infrastructure:
+    envoyProxyName: public-gateway-envoy-proxy
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All
+
+envoyProxy:
+  enabled: true
+  service:
+    type: ClusterIP
+  deployment:
+    replicas: 1
+    nodeSelector:
+      kubernetes.io/hostname: k8s-worker-01
