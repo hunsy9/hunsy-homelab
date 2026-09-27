@@ -1,0 +1,20 @@
+# Envoy Gateway Helm values for the az site.
+# This installs the Envoy Gateway control plane. Gateway/HTTPRoute resources will be added separately.
+
+crds:
+  enabled: true
+
+deployment:
+  replicas: 1
+  pod:
+    nodeSelector:
+      kubernetes.io/hostname: k8s-worker-01
+
+certgen:
+  job:
+    pod:
+      nodeSelector:
+        kubernetes.io/hostname: k8s-worker-01
+
+service:
+  type: ClusterIP
