@@ -105,7 +105,11 @@ extraManifests:
       hostnames:
         - grafana.seung.site
       rules:
-        - backendRefs:
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /
+          backendRefs:
             - group: ""
               kind: Service
               name: kube-prometheus-stack-grafana
