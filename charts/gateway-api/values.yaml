@@ -21,6 +21,7 @@ gateway:
 envoyProxy:
   enabled: true
   service:
+    name: public-gateway
     type: ClusterIP
   deployment:
     replicas: 1
