@@ -34,3 +34,15 @@ env:
 apiServerKeySecret:
   name: hermes-api-server-key
   key: key
+
+providerKeysSecret:
+  name: hermes-provider-keys
+
+hermesConfig:
+  model:
+    provider: openai-api
+    default: gpt-5-mini
+  toolsets:
+    - hermes-api-server
+  terminal:
+    backend: local

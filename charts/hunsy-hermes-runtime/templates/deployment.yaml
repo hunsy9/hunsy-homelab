@@ -26,6 +26,9 @@ spec:
 {{ toYaml .Values.nodeSelector | indent 8 }}
       containers:
         - name: hermes-runtime
+          envFrom:
+            - secretRef:
+                name: {{ .Values.providerKeysSecret.name | quote }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
           ports:
@@ -60,5 +63,14 @@ spec:
             periodSeconds: 20
             timeoutSeconds: 3
             failureThreshold: 6
+          volumeMounts:
+            - name: hermes-config
+              mountPath: /opt/data/config.yaml
+              subPath: config.yaml
+              readOnly: true
           resources:
 {{ toYaml .Values.resources | indent 12 }}
+      volumes:
+        - name: hermes-config
+          configMap:
+            name: {{ .Chart.Name | quote }}
