@@ -1,0 +1,35 @@
+---
+- name: Open monitoring firewall rules
+  hosts: all
+  gather_facts: false
+
+  vars:
+    firewalld_zone: public
+    monitoring_firewall_ports:
+      - 9100/tcp # prometheus-node-exporter scrape endpoint
+
+  tasks:
+    - name: Ensure firewalld is running
+      ansible.builtin.systemd:
+        name: firewalld
+        state: started
+        enabled: true
+
+    - name: Open monitoring TCP ports
+      ansible.posix.firewalld:
+        zone: "{{ firewalld_zone }}"
+        port: "{{ item }}"
+        permanent: true
+        immediate: true
+        state: enabled
+      loop: "{{ monitoring_firewall_ports }}"
+
+    - name: Show active firewalld zone rules
+      ansible.builtin.command: firewall-cmd --zone={{ firewalld_zone }} --list-all
+      register: firewalld_rules
+      changed_when: false
+
+    - name: Display firewalld rules
+      ansible.builtin.debug:
+        msg:
+          public: "{{ firewalld_rules.stdout_lines }}"
