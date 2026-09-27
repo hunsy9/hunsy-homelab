@@ -1,0 +1,112 @@
+---
+- name: Configure CoreDNS upstream resolvers
+  hosts: control_plane
+  gather_facts: false
+
+  vars:
+    kubeconfig_path: /etc/kubernetes/admin.conf
+    coredns_namespace: kube-system
+    coredns_configmap: coredns
+    coredns_work_dir: /root/kubeadm-coredns
+    coredns_corefile_path: "{{ coredns_work_dir }}/Corefile"
+    coredns_upstream_resolvers:
+      - 1.1.1.1
+      - 8.8.8.8
+
+  tasks:
+    - name: Ensure kubeadm admin kubeconfig exists
+      ansible.builtin.stat:
+        path: "{{ kubeconfig_path }}"
+      register: kubeconfig_file
+
+    - name: Stop if control plane is not initialized
+      ansible.builtin.assert:
+        that:
+          - kubeconfig_file.stat.exists
+        fail_msg: "Kubeadm admin kubeconfig is missing. Run playbooks/40-init-control-plane.yml first."
+
+    - name: Read current CoreDNS Corefile
+      ansible.builtin.command: >-
+        kubectl --kubeconfig {{ kubeconfig_path }}
+        -n {{ coredns_namespace }}
+        get configmap {{ coredns_configmap }}
+        -o jsonpath={.data.Corefile}
+      register: coredns_current_corefile
+      changed_when: false
+      check_mode: false
+
+    - name: Stop if CoreDNS does not forward to /etc/resolv.conf or managed resolvers
+      ansible.builtin.assert:
+        that:
+          - >-
+            'forward . /etc/resolv.conf' in coredns_current_corefile.stdout
+            or ('forward . ' ~ (coredns_upstream_resolvers | join(' '))) in coredns_current_corefile.stdout
+        fail_msg: "CoreDNS forward stanza is not in the expected kubeadm default form. Inspect kube-system/coredns before changing it."
+
+    - name: Build desired CoreDNS Corefile
+      ansible.builtin.set_fact:
+        coredns_desired_corefile: >-
+          {{ coredns_current_corefile.stdout
+          | replace('forward . /etc/resolv.conf', 'forward . ' ~ (coredns_upstream_resolvers | join(' '))) }}
+
+    - name: Show planned CoreDNS upstream change
+      ansible.builtin.debug:
+        msg:
+          current_forward: "{{ coredns_current_corefile.stdout | regex_search('forward \\. [^\n{]+') }}"
+          desired_forward: "forward . {{ coredns_upstream_resolvers | join(' ') }}"
+
+    - name: Create CoreDNS work directory
+      ansible.builtin.file:
+        path: "{{ coredns_work_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Write desired CoreDNS Corefile on control plane
+      ansible.builtin.copy:
+        content: "{{ coredns_desired_corefile }}"
+        dest: "{{ coredns_corefile_path }}"
+        owner: root
+        group: root
+        mode: '0644'
+      register: coredns_corefile_copy
+
+    - name: Apply CoreDNS ConfigMap when Corefile changed
+      ansible.builtin.shell: >-
+        kubectl --kubeconfig {{ kubeconfig_path }}
+        -n {{ coredns_namespace }}
+        create configmap {{ coredns_configmap }}
+        --from-file=Corefile={{ coredns_corefile_path }}
+        --dry-run=client -o yaml
+        | kubectl --kubeconfig {{ kubeconfig_path }} apply -f -
+      register: coredns_configmap_apply
+      changed_when: "'configured' in coredns_configmap_apply.stdout or 'created' in coredns_configmap_apply.stdout"
+      when:
+        - not ansible_check_mode
+        - coredns_corefile_copy.changed
+
+    - name: Read CoreDNS Corefile after update
+      ansible.builtin.command: >-
+        kubectl --kubeconfig {{ kubeconfig_path }}
+        -n {{ coredns_namespace }}
+        get configmap {{ coredns_configmap }}
+        -o jsonpath={.data.Corefile}
+      register: coredns_updated_corefile
+      changed_when: false
+      check_mode: false
+      when: not ansible_check_mode
+
+    - name: Verify CoreDNS upstream resolvers are configured
+      ansible.builtin.assert:
+        that:
+          - "('forward . ' ~ (coredns_upstream_resolvers | join(' '))) in coredns_updated_corefile.stdout"
+        fail_msg: "CoreDNS ConfigMap was not updated with the expected upstream resolvers."
+      when: not ansible_check_mode
+
+    - name: Show manual restart command
+      ansible.builtin.debug:
+        msg:
+          - "CoreDNS ConfigMap is configured or will be configured after a non-check run. Restart CoreDNS to load it:"
+          - "kubectl --kubeconfig {{ kubeconfig_path }} -n {{ coredns_namespace }} rollout restart deployment/coredns"
+          - "kubectl --kubeconfig {{ kubeconfig_path }} -n {{ coredns_namespace }} rollout status deployment/coredns --timeout=180s"

@@ -6,6 +6,10 @@ metadata:
   name: default
 spec:
   calicoNetwork:
+    nodeAddressAutodetectionV4:
+      firstFound: false
+      cidrs:
+        - 192.168.0.0/24
     ipPools:
       - name: default-ipv4-ippool
         blockSize: 26

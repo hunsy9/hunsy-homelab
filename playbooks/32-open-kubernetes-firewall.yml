@@ -16,6 +16,8 @@
       - 5473/tcp
     calico_firewall_protocols:
       - ipip
+    calico_trusted_pod_cidr: "{{ kubernetes_pod_cidr }}"
+    calico_trusted_zone: trusted
 
   tasks:
     - name: Ensure firewalld is running
@@ -52,11 +54,26 @@
         state: enabled
       loop: "{{ calico_firewall_protocols }}"
 
+    - name: Trust Calico pod CIDR traffic
+      ansible.posix.firewalld:
+        zone: "{{ calico_trusted_zone }}"
+        source: "{{ calico_trusted_pod_cidr }}"
+        permanent: true
+        immediate: true
+        state: enabled
+
     - name: Show active firewalld zone rules
       ansible.builtin.command: firewall-cmd --zone={{ firewalld_zone }} --list-all
       register: firewalld_rules
       changed_when: false
 
+    - name: Show trusted firewalld zone rules
+      ansible.builtin.command: firewall-cmd --zone={{ calico_trusted_zone }} --list-all
+      register: trusted_firewalld_rules
+      changed_when: false
+
     - name: Display firewalld rules
       ansible.builtin.debug:
-        var: firewalld_rules.stdout_lines
+        msg:
+          public: "{{ firewalld_rules.stdout_lines }}"
+          trusted: "{{ trusted_firewalld_rules.stdout_lines }}"
