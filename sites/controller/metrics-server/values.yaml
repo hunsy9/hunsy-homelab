@@ -1,0 +1,21 @@
+replicas: 1
+
+# kubeadm lab cluster: keep this control-plane utility on the controller node.
+nodeSelector:
+  kubernetes.io/hostname: k8s-control-01
+
+tolerations:
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+
+# kubeadm kubelet serving certificates usually do not have an IP SAN signed for
+# metrics-server validation. This is acceptable for this private learning cluster;
+# revisit when moving to the long-running RKE2 setup.
+args:
+  - --kubelet-insecure-tls
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 100Mi
