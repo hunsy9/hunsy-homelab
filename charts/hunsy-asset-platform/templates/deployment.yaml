@@ -20,6 +20,8 @@ spec:
         app.kubernetes.io/name: {{ .Chart.Name | quote }}
         app.kubernetes.io/instance: {{ .Release.Name | quote }}
     spec:
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 8 }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}
       volumes:
