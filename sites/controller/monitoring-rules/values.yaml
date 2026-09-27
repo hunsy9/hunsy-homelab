@@ -1,2 +1,5 @@
 testAlert:
+  enabled: false
+
+homelabAlerts:
   enabled: true

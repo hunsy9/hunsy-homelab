@@ -4,9 +4,31 @@ ruleLabels:
   release: kube-prometheus-stack
 
 testAlert:
-  enabled: true
+  enabled: false
   name: HomelabTestAlert
   duration: 1m
   severity: test
   summary: "Homelab test alert"
   description: "This is a test alert from monitoring-rules. It verifies PrometheusRule → Prometheus → Alertmanager before Discord integration."
+
+homelabAlerts:
+  enabled: true
+  severity: warning
+  nodeExporterDown:
+    enabled: true
+    duration: 2m
+  nodeMemoryHigh:
+    enabled: true
+    threshold: 0.90
+    thresholdPercent: 90
+    duration: 10m
+  diskUsageHigh:
+    enabled: true
+    threshold: 0.90
+    thresholdPercent: 90
+    duration: 10m
+    mountpointRegex: "/|/var|/home"
+    filesystemRegex: "ext4|xfs"
+  podCrashLoopBackOff:
+    enabled: true
+    duration: 5m

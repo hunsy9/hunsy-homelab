@@ -1,0 +1,56 @@
+{{- if .Values.homelabAlerts.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: homelab-operational-alerts
+  namespace: {{ .Values.namespace | quote }}
+  labels:
+    {{- toYaml .Values.ruleLabels | nindent 4 }}
+spec:
+  groups:
+    - name: homelab.operational
+      rules:
+        {{- if .Values.homelabAlerts.nodeExporterDown.enabled }}
+        - alert: HomelabNodeExporterDown
+          expr: up{job="node-exporter"} == 0
+          for: {{ .Values.homelabAlerts.nodeExporterDown.duration }}
+          labels:
+            severity: {{ .Values.homelabAlerts.severity | quote }}
+          annotations:
+            summary: "Node exporter is down on {{`{{ $labels.instance }}`}}"
+            description: "Prometheus cannot scrape node-exporter on {{`{{ $labels.instance }}`}} for more than {{ .Values.homelabAlerts.nodeExporterDown.duration }}."
+        {{- end }}
+
+        {{- if .Values.homelabAlerts.nodeMemoryHigh.enabled }}
+        - alert: HomelabNodeMemoryHigh
+          expr: 1 - (node_memory_MemAvailable_bytes{job="node-exporter"} / node_memory_MemTotal_bytes{job="node-exporter"}) > {{ .Values.homelabAlerts.nodeMemoryHigh.threshold }}
+          for: {{ .Values.homelabAlerts.nodeMemoryHigh.duration }}
+          labels:
+            severity: {{ .Values.homelabAlerts.severity | quote }}
+          annotations:
+            summary: "Node memory usage is high on {{`{{ $labels.instance }}`}}"
+            description: "Node {{`{{ $labels.instance }}`}} memory usage has been above {{ .Values.homelabAlerts.nodeMemoryHigh.thresholdPercent }}% for more than {{ .Values.homelabAlerts.nodeMemoryHigh.duration }}."
+        {{- end }}
+
+        {{- if .Values.homelabAlerts.diskUsageHigh.enabled }}
+        - alert: HomelabDiskUsageHigh
+          expr: 1 - (node_filesystem_avail_bytes{job="node-exporter", fstype=~{{ .Values.homelabAlerts.diskUsageHigh.filesystemRegex | quote }}, mountpoint=~{{ .Values.homelabAlerts.diskUsageHigh.mountpointRegex | quote }}} / node_filesystem_size_bytes{job="node-exporter", fstype=~{{ .Values.homelabAlerts.diskUsageHigh.filesystemRegex | quote }}, mountpoint=~{{ .Values.homelabAlerts.diskUsageHigh.mountpointRegex | quote }}}) > {{ .Values.homelabAlerts.diskUsageHigh.threshold }}
+          for: {{ .Values.homelabAlerts.diskUsageHigh.duration }}
+          labels:
+            severity: {{ .Values.homelabAlerts.severity | quote }}
+          annotations:
+            summary: "Disk usage is high on {{`{{ $labels.instance }}`}} {{`{{ $labels.mountpoint }}`}}"
+            description: "Filesystem {{`{{ $labels.mountpoint }}`}} on {{`{{ $labels.instance }}`}} has been above {{ .Values.homelabAlerts.diskUsageHigh.thresholdPercent }}% usage for more than {{ .Values.homelabAlerts.diskUsageHigh.duration }}."
+        {{- end }}
+
+        {{- if .Values.homelabAlerts.podCrashLoopBackOff.enabled }}
+        - alert: HomelabPodCrashLoopBackOff
+          expr: kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff"} == 1
+          for: {{ .Values.homelabAlerts.podCrashLoopBackOff.duration }}
+          labels:
+            severity: {{ .Values.homelabAlerts.severity | quote }}
+          annotations:
+            summary: "Pod container is CrashLoopBackOff: {{`{{ $labels.namespace }}`}}/{{`{{ $labels.pod }}`}}"
+            description: "Container {{`{{ $labels.container }}`}} in pod {{`{{ $labels.namespace }}`}}/{{`{{ $labels.pod }}`}} has been CrashLoopBackOff for more than {{ .Values.homelabAlerts.podCrashLoopBackOff.duration }}."
+        {{- end }}
+{{- end }}

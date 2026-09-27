@@ -75,7 +75,7 @@ alertmanager:
             - alertname = "Watchdog"
         - receiver: discord
           matchers:
-            - severity = test
+            - severity =~ "test|warning|critical"
           group_by:
             - alertname
           group_wait: 10s
