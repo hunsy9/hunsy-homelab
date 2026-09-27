@@ -1,0 +1,50 @@
+namespace:
+  create: true
+  name: hunsy-asset-platform
+
+image:
+  repository: ghcr.io/hunsy9/hunsy-asset-platform/api-server
+  tag: sha-5c88862
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+nodeSelector:
+  kubernetes.io/hostname: k8s-worker-01
+
+service:
+  name: hunsy-asset-platform-api
+  port: 80
+  targetPort: 8000
+
+env:
+  spreadsheetId: 1mOK6yewHRYXSbn532lhUZr-YrSCPVafWa1Rg4pXW5Ho
+  googleCredentialsFile: /var/run/secrets/google/service-account.json
+
+googleServiceAccountSecret:
+  name: google-service-account
+  key: service-account.json
+  mountPath: /var/run/secrets/google
+
+httpRoute:
+  enabled: true
+  name: hunsy-asset-platform-api
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public-gateway
+      namespace: gateway-system
+      sectionName: http
+  hostnames:
+    - asset.seung.site
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: hunsy-asset-platform-api
+          port: 80
+          weight: 1

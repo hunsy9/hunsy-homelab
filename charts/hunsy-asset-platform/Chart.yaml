@@ -1,0 +1,6 @@
+apiVersion: v2
+name: hunsy-asset-platform
+description: Hunsy asset platform API server with Gateway API HTTPRoute
+type: application
+version: 0.1.0
+appVersion: "sha-5c88862"
