@@ -1,0 +1,113 @@
+# Minimal first monitoring stack for the kubeadm learning cluster.
+# Heavy control-plane observability components are pinned to k8s-control-01.
+# node-exporter remains a DaemonSet and runs on every node by design.
+
+prometheusOperator:
+  nodeSelector:
+    kubernetes.io/hostname: k8s-control-01
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 256Mi
+
+prometheus:
+  prometheusSpec:
+    retention: 3d
+    nodeSelector:
+      kubernetes.io/hostname: k8s-control-01
+    tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+    resources:
+      requests:
+        cpu: 200m
+        memory: 1Gi
+      limits:
+        memory: 2Gi
+    # Start without a PVC. This keeps the first deployment simple; metrics history
+    # is disposable until we choose storage/backup policy deliberately.
+    storageSpec: {}
+
+alertmanager:
+  alertmanagerSpec:
+    nodeSelector:
+      kubernetes.io/hostname: k8s-control-01
+    tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+    resources:
+      requests:
+        cpu: 20m
+        memory: 64Mi
+      limits:
+        memory: 128Mi
+    storage: {}
+
+grafana:
+  enabled: true
+  defaultDashboardsEnabled: true
+  nodeSelector:
+    kubernetes.io/hostname: k8s-control-01
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      memory: 512Mi
+
+kube-state-metrics:
+  nodeSelector:
+    kubernetes.io/hostname: k8s-control-01
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+  resources:
+    requests:
+      cpu: 20m
+      memory: 64Mi
+    limits:
+      memory: 128Mi
+
+prometheus-node-exporter:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      memory: 128Mi
+
+extraManifests:
+  - apiVersion: gateway.networking.k8s.io/v1
+    kind: HTTPRoute
+    metadata:
+      name: grafana
+      namespace: monitoring
+    spec:
+      parentRefs:
+        - group: gateway.networking.k8s.io
+          kind: Gateway
+          name: public-gateway
+          namespace: gateway-system
+          sectionName: http
+      hostnames:
+        - grafana.seung.site
+      rules:
+        - backendRefs:
+            - group: ""
+              kind: Service
+              name: kube-prometheus-stack-grafana
+              port: 80
+              weight: 1
