@@ -24,8 +24,13 @@ resources:
 
 env:
   assetApiBaseUrl: http://hunsy-asset-platform-api.hunsy-asset-platform.svc.cluster.local
+  hermesApiBaseUrl: http://hunsy-hermes-runtime.hunsy-hermes-runtime.svc.cluster.local:8642
   logLevel: INFO
 
 discordBotTokenSecret:
   name: discord-bot-token
   key: token
+
+hermesApiServerKeySecret:
+  name: hermes-api-server-key
+  key: key

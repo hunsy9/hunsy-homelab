@@ -36,6 +36,13 @@ spec:
                   key: {{ .Values.discordBotTokenSecret.key | quote }}
             - name: ASSET_API_BASE_URL
               value: {{ .Values.env.assetApiBaseUrl | quote }}
+            - name: HERMES_API_BASE_URL
+              value: {{ .Values.env.hermesApiBaseUrl | quote }}
+            - name: HERMES_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.hermesApiServerKeySecret.name | quote }}
+                  key: {{ .Values.hermesApiServerKeySecret.key | quote }}
             - name: LOG_LEVEL
               value: {{ .Values.env.logLevel | quote }}
           resources:

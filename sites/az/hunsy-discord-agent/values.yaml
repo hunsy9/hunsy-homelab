@@ -4,7 +4,7 @@ namespace:
 
 image:
   repository: ghcr.io/hunsy9/hunsy-discord-agent
-  tag: sha-ab7516c
+  tag: sha-e59419c
   pullPolicy: IfNotPresent
 
 imagePullSecrets:
@@ -15,8 +15,13 @@ nodeSelector:
 
 env:
   assetApiBaseUrl: http://hunsy-asset-platform-api.hunsy-asset-platform.svc.cluster.local
+  hermesApiBaseUrl: http://hunsy-hermes-runtime.hunsy-hermes-runtime.svc.cluster.local:8642
   logLevel: INFO
 
 discordBotTokenSecret:
   name: discord-bot-token
   key: token
+
+hermesApiServerKeySecret:
+  name: hermes-api-server-key
+  key: key
