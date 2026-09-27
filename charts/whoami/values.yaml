@@ -1,0 +1,36 @@
+namespace:
+  create: true
+  name: whoami
+
+image:
+  repository: docker.io/traefik/whoami
+  tag: v1.11.0
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+nodeSelector:
+  kubernetes.io/hostname: k8s-worker-01
+
+service:
+  name: whoami
+  port: 80
+  targetPort: 80
+
+httpRoute:
+  enabled: true
+  name: whoami
+  parentRefs:
+    - name: public-gateway
+      namespace: gateway-system
+      sectionName: http
+  hostnames:
+    - whoami.homelab.local
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: whoami
+          port: 80

@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: whoami
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: https://github.com/hunsy9/hunsy-homelab.git
+      targetRevision: main
+      path: charts/whoami
+      helm:
+        releaseName: whoami
+        valueFiles:
+          - $values/sites/az/whoami/values.yaml
+    - repoURL: https://github.com/hunsy9/hunsy-homelab.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: whoami
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
