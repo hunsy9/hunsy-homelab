@@ -1,0 +1,24 @@
+namespace:
+  create: true
+  name: cloudflared
+
+replicaCount: 1
+
+image:
+  repository: docker.io/cloudflare/cloudflared
+  tag: latest
+  pullPolicy: IfNotPresent
+
+secret:
+  name: cloudflared-token
+  key: token
+
+nodeSelector:
+  kubernetes.io/hostname: k8s-worker-01
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    memory: 256Mi
