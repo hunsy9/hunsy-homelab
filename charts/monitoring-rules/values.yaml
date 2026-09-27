@@ -1,0 +1,12 @@
+namespace: monitoring
+
+ruleLabels:
+  release: kube-prometheus-stack
+
+testAlert:
+  enabled: true
+  name: HomelabTestAlert
+  duration: 1m
+  severity: test
+  summary: "Homelab test alert"
+  description: "This is a test alert from monitoring-rules. It verifies PrometheusRule → Prometheus → Alertmanager before Discord integration."

@@ -1,0 +1,21 @@
+{{- if .Values.testAlert.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: homelab-test-alerts
+  namespace: {{ .Values.namespace | quote }}
+  labels:
+    {{- toYaml .Values.ruleLabels | nindent 4 }}
+spec:
+  groups:
+    - name: homelab.test
+      rules:
+        - alert: {{ .Values.testAlert.name }}
+          expr: vector(1)
+          for: {{ .Values.testAlert.duration }}
+          labels:
+            severity: {{ .Values.testAlert.severity | quote }}
+          annotations:
+            summary: {{ .Values.testAlert.summary | quote }}
+            description: {{ .Values.testAlert.description | quote }}
+{{- end }}
