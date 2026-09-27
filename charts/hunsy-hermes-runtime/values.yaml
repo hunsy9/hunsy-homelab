@@ -1,0 +1,36 @@
+namespace:
+  create: true
+  name: hunsy-hermes-runtime
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/hunsy9/hunsy-hermes-runtime
+  tag: sha-2460691
+  pullPolicy: IfNotPresent
+
+imagePullSecrets:
+  - name: ghcr-pull-secret
+
+nodeSelector:
+  kubernetes.io/hostname: k8s-worker-01
+
+service:
+  type: ClusterIP
+  port: 8642
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 512Mi
+  limits:
+    memory: 2Gi
+
+env:
+  apiServerEnabled: "true"
+  apiServerHost: "0.0.0.0"
+  apiServerPort: "8642"
+
+apiServerKeySecret:
+  name: hermes-api-server-key
+  key: key

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: hunsy-hermes-runtime
+description: Hermes Agent runtime for Hunsy homelab services
+type: application
+version: 0.1.0
+appVersion: "0.21.5"
