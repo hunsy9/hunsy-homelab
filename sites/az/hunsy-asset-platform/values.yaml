@@ -23,7 +23,7 @@ service:
 env:
   spreadsheetId: 1mOK6yewHRYXSbn532lhUZr-YrSCPVafWa1Rg4pXW5Ho
   googleCredentialsFile: /var/run/secrets/google/service-account.json
-  humanSheetsEnabled: false
+  humanSheetsEnabled: true
 
 googleServiceAccountSecret:
   name: google-service-account
