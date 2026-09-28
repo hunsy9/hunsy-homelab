@@ -4,7 +4,7 @@ namespace:
 
 image:
   repository: ghcr.io/hunsy9/hunsy-asset-platform/api-server
-  tag: sha-5c88862
+  tag: sha-6f16c8b
   pullPolicy: IfNotPresent
 
 imagePullSecrets:
@@ -30,7 +30,7 @@ googleServiceAccountSecret:
   mountPath: /var/run/secrets/google
 
 toss:
-  enabled: false
+  enabled: true
   credentialsSecret:
     name: toss-api-credentials
     clientIdKey: client_id
