@@ -1,0 +1,67 @@
+{{- if .Values.snapshotCronJob.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ printf "%s-snapshot" .Chart.Name | quote }}
+  namespace: {{ .Values.namespace.name | quote }}
+  labels:
+    app.kubernetes.io/name: {{ printf "%s-snapshot" .Chart.Name | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+spec:
+  schedule: {{ .Values.snapshotCronJob.schedule | quote }}
+  timeZone: {{ .Values.snapshotCronJob.timeZone | quote }}
+  concurrencyPolicy: {{ .Values.snapshotCronJob.concurrencyPolicy | quote }}
+  successfulJobsHistoryLimit: {{ .Values.snapshotCronJob.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.snapshotCronJob.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      backoffLimit: {{ .Values.snapshotCronJob.backoffLimit }}
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: {{ printf "%s-snapshot" .Chart.Name | quote }}
+            app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        spec:
+          restartPolicy: Never
+          imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 12 }}
+          nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 12 }}
+          volumes:
+            - name: google-service-account
+              secret:
+                secretName: {{ .Values.googleServiceAccountSecret.name | quote }}
+          containers:
+            - name: snapshot
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+              command:
+                - python
+                - -m
+                - app.snapshot_job
+              env:
+                - name: ASSET_SPREADSHEET_ID
+                  value: {{ .Values.env.spreadsheetId | quote }}
+                - name: ASSET_GOOGLE_CREDENTIALS_FILE
+                  value: {{ printf "%s/%s" .Values.googleServiceAccountSecret.mountPath .Values.googleServiceAccountSecret.key | quote }}
+                - name: ASSET_HUMAN_SHEETS_ENABLED
+                  value: {{ .Values.env.humanSheetsEnabled | quote }}
+                - name: ASSET_TOSS_ENABLED
+                  value: {{ .Values.toss.enabled | quote }}
+                {{- if .Values.toss.enabled }}
+                - name: ASSET_TOSS_CLIENT_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.toss.credentialsSecret.name | quote }}
+                      key: {{ .Values.toss.credentialsSecret.clientIdKey | quote }}
+                - name: ASSET_TOSS_CLIENT_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.toss.credentialsSecret.name | quote }}
+                      key: {{ .Values.toss.credentialsSecret.clientSecretKey | quote }}
+                {{- end }}
+              volumeMounts:
+                - name: google-service-account
+                  mountPath: {{ .Values.googleServiceAccountSecret.mountPath | quote }}
+                  readOnly: true
+{{- end }}

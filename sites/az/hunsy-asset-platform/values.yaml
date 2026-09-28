@@ -4,7 +4,7 @@ namespace:
 
 image:
   repository: ghcr.io/hunsy9/hunsy-asset-platform/api-server
-  tag: sha-82ce6fc
+  tag: sha-4a6fae2
   pullPolicy: IfNotPresent
 
 imagePullSecrets:
@@ -36,6 +36,15 @@ toss:
     name: toss-api-credentials
     clientIdKey: client_id
     clientSecretKey: client_secret
+
+snapshotCronJob:
+  enabled: true
+  schedule: "10 0 * * *"
+  timeZone: Asia/Seoul
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  backoffLimit: 2
 
 httpRoute:
   enabled: true
