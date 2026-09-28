@@ -37,6 +37,8 @@ spec:
               value: {{ .Values.env.spreadsheetId | quote }}
             - name: ASSET_GOOGLE_CREDENTIALS_FILE
               value: {{ printf "%s/%s" .Values.googleServiceAccountSecret.mountPath .Values.googleServiceAccountSecret.key | quote }}
+            - name: ASSET_HUMAN_SHEETS_ENABLED
+              value: {{ .Values.env.humanSheetsEnabled | quote }}
             - name: ASSET_TOSS_ENABLED
               value: {{ .Values.toss.enabled | quote }}
             {{- if .Values.toss.enabled }}
