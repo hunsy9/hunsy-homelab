@@ -15,5 +15,9 @@ data:
       default: {{ .Values.hermesConfig.model.default | quote }}
     toolsets:
 {{ toYaml .Values.hermesConfig.toolsets | indent 6 }}
+{{- with .Values.hermesConfig.mcp_servers }}
+    mcp_servers:
+{{ toYaml . | indent 6 }}
+{{- end }}
     terminal:
       backend: {{ .Values.hermesConfig.terminal.backend | quote }}

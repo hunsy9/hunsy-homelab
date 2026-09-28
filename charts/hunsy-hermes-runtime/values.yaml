@@ -45,5 +45,6 @@ hermesConfig:
     default: gpt-5.5
   toolsets:
     - hermes-api-server
+  mcp_servers: {}
   terminal:
     backend: local
