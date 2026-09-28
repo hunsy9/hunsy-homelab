@@ -37,6 +37,20 @@ spec:
               value: {{ .Values.env.spreadsheetId | quote }}
             - name: ASSET_GOOGLE_CREDENTIALS_FILE
               value: {{ printf "%s/%s" .Values.googleServiceAccountSecret.mountPath .Values.googleServiceAccountSecret.key | quote }}
+            - name: ASSET_TOSS_ENABLED
+              value: {{ .Values.toss.enabled | quote }}
+            {{- if .Values.toss.enabled }}
+            - name: ASSET_TOSS_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.toss.credentialsSecret.name | quote }}
+                  key: {{ .Values.toss.credentialsSecret.clientIdKey | quote }}
+            - name: ASSET_TOSS_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.toss.credentialsSecret.name | quote }}
+                  key: {{ .Values.toss.credentialsSecret.clientSecretKey | quote }}
+            {{- end }}
           volumeMounts:
             - name: google-service-account
               mountPath: {{ .Values.googleServiceAccountSecret.mountPath | quote }}

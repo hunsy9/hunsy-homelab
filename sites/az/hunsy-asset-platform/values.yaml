@@ -29,6 +29,13 @@ googleServiceAccountSecret:
   key: service-account.json
   mountPath: /var/run/secrets/google
 
+toss:
+  enabled: false
+  credentialsSecret:
+    name: toss-api-credentials
+    clientIdKey: client_id
+    clientSecretKey: client_secret
+
 httpRoute:
   enabled: true
   name: hunsy-asset-platform-api
