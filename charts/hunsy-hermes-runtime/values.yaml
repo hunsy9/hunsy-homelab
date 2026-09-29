@@ -90,6 +90,7 @@ hermesConfig:
     default: gpt-5.5
   toolsets:
     - hermes-api-server
+  compression: {}
   mcp_servers: {}
   terminal:
     backend: local

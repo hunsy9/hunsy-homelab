@@ -196,6 +196,8 @@ hermesConfig:
   toolsets:
     - hermes-api-server
     - hermes-discord
+  compression:
+    codex_gpt55_autoraise_notice: false
   mcp_servers:
     asset:
       url: http://hunsy-assets-mcp.hunsy-assets-mcp.svc.cluster.local:8080/mcp
