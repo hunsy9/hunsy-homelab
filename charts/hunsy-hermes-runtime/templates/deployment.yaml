@@ -65,6 +65,18 @@ spec:
               value: {{ .Values.discord.homeChannelName | quote }}
             - name: DISCORD_REPLY_TO_MODE
               value: {{ .Values.discord.replyToMode | quote }}
+            - name: DISCORD_REQUIRE_MENTION
+              value: {{ .Values.discord.requireMention | quote }}
+{{- with .Values.discord.freeResponseChannels }}
+            - name: DISCORD_FREE_RESPONSE_CHANNELS
+              value: {{ join "," . | quote }}
+{{- end }}
+            - name: DISCORD_FREE_RESPONSE_AUTO_THREAD
+              value: {{ .Values.discord.freeResponseAutoThread | quote }}
+{{- with .Values.discord.allowedChannels }}
+            - name: DISCORD_ALLOWED_CHANNELS
+              value: {{ join "," . | quote }}
+{{- end }}
 {{- end }}
           readinessProbe:
             httpGet:

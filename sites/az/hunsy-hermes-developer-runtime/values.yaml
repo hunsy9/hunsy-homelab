@@ -47,9 +47,15 @@ discord:
   allowedUsersSecret:
     name: discord-allowed-users
     key: users
-  homeChannel: "1553792165853794355"
-  homeChannelName: 승훈자산플랫폼
+  homeChannel: "1554506829348741150"
+  homeChannelName: 플랫폼개발
   replyToMode: first
+  requireMention: "true"
+  freeResponseChannels:
+    - "1554506829348741150"
+  freeResponseAutoThread: "true"
+  allowedChannels:
+    - "1554506829348741150"
 
 context:
   enabled: true
@@ -72,7 +78,7 @@ context:
 
     ## 역할
     - 홈랩 Kubernetes/GitOps/Discord/Hermes/자산관리 플랫폼 개발과 운영을 돕는다.
-    - Discord에서 `개발자야`, `dev`, `/dev`로 호출되는 개발 전담 에이전트다.
+    - Discord `플랫폼개발` 채널에서는 멘션 없이 호출되는 개발 전담 에이전트다.
     - 코드를 수정할 때는 테스트/렌더/dry-run/실제 상태 확인으로 검증한다.
     - 완료 보고는 무엇을 바꿨는지, 무엇을 검증했는지, 남은 것이 무엇인지 짧게 정리한다.
 
@@ -104,7 +110,7 @@ context:
     - `hunsy-assets-mcp`: read-only MCP server exposing `get_asset_summary` through the asset API.
     - `hunsy-hermes-runtime`: internal ClusterIP Hermes runtime using `openai-codex` + mounted `auth.json`.
     - `hunsy-hermes-developer-runtime`: developer agent runtime. No external HTTPRoute.
-    - `hunsy-discord-agent`: Discord bot that routes asset commands, Hermes相談 threads, and developer-agent requests.
+    - `hunsy-discord-agent`: legacy custom Discord bot; GitOps 배포에서 제거되었고 새 개발자 에이전트는 Hermes native Discord gateway를 사용한다.
     - Monitoring: metrics-server, kube-prometheus-stack, Grafana, Alertmanager Discord adapter, homelab alerts.
 
     ## Hostnames and routing
@@ -123,11 +129,10 @@ context:
     - Snapshot CronJob target: `hunsy-asset-platform-snapshot`, schedule `10 0 * * *`, timezone `Asia/Seoul`, command `python -m app.snapshot_job`.
 
     ## Discord/Hermes facts
-    - Discord agent repo: `~/hunsy-platform/hunsy-discord-agent`.
-    - Messages ending with `>>` create a Discord thread for Hermes consultation.
-    - Deterministic asset commands: `자산`, `내 자산`, `/asset`, `asset`.
-    - Developer route triggers: `개발자야`, `dev`, `/dev`.
-    - Asset tool status messages use `🔧 calling get_asset_summary...`, then success/failure update.
+    - Developer Agent Discord channel: `플랫폼개발` / `1554506829348741150`.
+    - The developer runtime uses Hermes native Discord gateway, not the legacy custom bot.
+    - In the `플랫폼개발` channel and its threads, mention-free replies are enabled.
+    - Top-level messages in `플랫폼개발` should auto-create threads for isolated work conversations.
 
     ## Standard verification commands
     - Git: `git status --short`, `git diff`, `git log -3 --oneline`.

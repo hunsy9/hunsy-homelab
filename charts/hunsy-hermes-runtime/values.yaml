@@ -56,6 +56,10 @@ discord:
   homeChannel: ""
   homeChannelName: ""
   replyToMode: first
+  requireMention: "true"
+  freeResponseChannels: []
+  freeResponseAutoThread: "false"
+  allowedChannels: []
 
 context:
   enabled: false
