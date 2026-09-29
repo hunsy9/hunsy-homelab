@@ -140,7 +140,8 @@ context:
 
     ## Current storage limitation
     - No CSI driver / StorageClass is installed yet.
-    - Hermes developer runtime MVP uses `emptyDir` for `/opt/data`, so memory/session are not persistent across Pod restarts.
+    - Hermes developer runtime MVP uses the container writable filesystem for `/opt/data`, so memory/session are not persistent across Pod replacement.
+    - Do not mount `emptyDir` over `/opt/data` because the current Hermes runtime image stores its installed Python/tools under `/opt/data/tools`.
     - Persistent memory should move to PVC after installing a simple storage layer such as local-path-provisioner.
 
 hermesConfig:
