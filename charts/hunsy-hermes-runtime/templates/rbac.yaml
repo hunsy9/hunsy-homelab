@@ -1,0 +1,78 @@
+{{- if .Values.rbac.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ printf "%s-read" (include "hunsy-hermes-runtime.name" .) | quote }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+  labels:
+    app.kubernetes.io/name: {{ include "hunsy-hermes-runtime.name" . | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "services", "endpoints", "events", "configmaps"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets", "statefulsets", "daemonsets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["gateways", "httproutes", "gatewayclasses"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ printf "%s-read" (include "hunsy-hermes-runtime.name" .) | quote }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+  labels:
+    app.kubernetes.io/name: {{ include "hunsy-hermes-runtime.name" . | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ printf "%s-read" (include "hunsy-hermes-runtime.name" .) | quote }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.serviceAccount.name | default (include "hunsy-hermes-runtime.name" .) | quote }}
+    namespace: {{ .Values.namespace.name | quote }}
+{{- if .Values.rbac.argocdApplications.enabled }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ printf "%s-argocd-apps" (include "hunsy-hermes-runtime.name" .) | quote }}
+  namespace: {{ .Values.rbac.argocdApplications.namespace | quote }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+  labels:
+    app.kubernetes.io/name: {{ include "hunsy-hermes-runtime.name" . | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+rules:
+  - apiGroups: ["argoproj.io"]
+    resources: ["applications"]
+    verbs: ["get", "list", "watch", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ printf "%s-argocd-apps" (include "hunsy-hermes-runtime.name" .) | quote }}
+  namespace: {{ .Values.rbac.argocdApplications.namespace | quote }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+  labels:
+    app.kubernetes.io/name: {{ include "hunsy-hermes-runtime.name" . | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ printf "%s-argocd-apps" (include "hunsy-hermes-runtime.name" .) | quote }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.serviceAccount.name | default (include "hunsy-hermes-runtime.name" .) | quote }}
+    namespace: {{ .Values.namespace.name | quote }}
+{{- end }}
+{{- end }}

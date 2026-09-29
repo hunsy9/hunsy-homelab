@@ -24,6 +24,10 @@ spec:
     spec:
       securityContext:
 {{ toYaml .Values.podSecurityContext | indent 8 }}
+{{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ .Values.serviceAccount.name | default (include "hunsy-hermes-runtime.name" .) | quote }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automountToken }}
+{{- end }}
       imagePullSecrets:
 {{ toYaml .Values.imagePullSecrets | indent 8 }}
       nodeSelector:

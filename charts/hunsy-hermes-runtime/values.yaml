@@ -21,6 +21,17 @@ podSecurityContext:
   fsGroup: 999
   fsGroupChangePolicy: OnRootMismatch
 
+serviceAccount:
+  create: false
+  name: ""
+  automountToken: true
+
+rbac:
+  enabled: false
+  argocdApplications:
+    enabled: false
+    namespace: argocd
+
 service:
   type: ClusterIP
   port: 8642
