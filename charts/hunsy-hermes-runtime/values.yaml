@@ -38,6 +38,11 @@ gitSsh:
   keyFile: id_ed25519
   knownHostsFile: known_hosts
 
+githubToken:
+  enabled: false
+  secretName: ""
+  key: token
+
 service:
   type: ClusterIP
   port: 8642

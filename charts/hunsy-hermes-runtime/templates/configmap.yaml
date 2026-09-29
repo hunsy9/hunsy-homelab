@@ -9,6 +9,13 @@ metadata:
     app.kubernetes.io/name: {{ include "hunsy-hermes-runtime.name" . | quote }}
     app.kubernetes.io/instance: {{ .Release.Name | quote }}
 data:
+  git-askpass.sh: |
+    #!/bin/sh
+    case "$1" in
+      *Username*) printf '%s\n' "${GITHUB_USER:-x-access-token}" ;;
+      *Password*) printf '%s\n' "$GITHUB_TOKEN" ;;
+      *) printf '%s\n' "$GITHUB_TOKEN" ;;
+    esac
   config.yaml: |
     model:
       provider: {{ .Values.hermesConfig.model.provider | quote }}

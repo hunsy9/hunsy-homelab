@@ -56,6 +56,22 @@ spec:
             - name: GIT_SSH_COMMAND
               value: "ssh -i /opt/data/.ssh/id_ed25519 -o UserKnownHostsFile=/opt/data/.ssh/known_hosts -o IdentitiesOnly=yes"
 {{- end }}
+{{- if .Values.githubToken.enabled }}
+            - name: GH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.githubToken.secretName | quote }}
+                  key: {{ .Values.githubToken.key | quote }}
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.githubToken.secretName | quote }}
+                  key: {{ .Values.githubToken.key | quote }}
+            - name: GIT_ASKPASS
+              value: /opt/data/git-askpass.sh
+            - name: GIT_TERMINAL_PROMPT
+              value: "0"
+{{- end }}
 {{- if .Values.discord.enabled }}
             - name: DISCORD_BOT_TOKEN
               valueFrom:
@@ -111,6 +127,12 @@ spec:
               mountPath: /opt/data/auth.json
               subPath: auth.json
               readOnly: true
+{{- if .Values.githubToken.enabled }}
+            - name: hermes-config
+              mountPath: /opt/data/git-askpass.sh
+              subPath: git-askpass.sh
+              readOnly: true
+{{- end }}
 {{- if .Values.gitSsh.enabled }}
             - name: git-ssh
               mountPath: /opt/data/.ssh/id_ed25519
@@ -137,6 +159,7 @@ spec:
         - name: hermes-config
           configMap:
             name: {{ include "hunsy-hermes-runtime.name" . | quote }}
+            defaultMode: 0550
         - name: hermes-auth-json
           secret:
             secretName: {{ .Values.authJsonSecret.name | quote }}
