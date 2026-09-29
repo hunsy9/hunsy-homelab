@@ -52,6 +52,10 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.apiServerKeySecret.name | quote }}
                   key: {{ .Values.apiServerKeySecret.key | quote }}
+{{- if .Values.gitSsh.enabled }}
+            - name: GIT_SSH_COMMAND
+              value: "ssh -i /opt/data/.ssh/id_ed25519 -o UserKnownHostsFile=/opt/data/.ssh/known_hosts -o IdentitiesOnly=yes"
+{{- end }}
 {{- if .Values.discord.enabled }}
             - name: DISCORD_BOT_TOKEN
               valueFrom:
@@ -107,6 +111,16 @@ spec:
               mountPath: /opt/data/auth.json
               subPath: auth.json
               readOnly: true
+{{- if .Values.gitSsh.enabled }}
+            - name: git-ssh
+              mountPath: /opt/data/.ssh/id_ed25519
+              subPath: {{ .Values.gitSsh.keyFile | quote }}
+              readOnly: true
+            - name: git-ssh
+              mountPath: /opt/data/.ssh/known_hosts
+              subPath: {{ .Values.gitSsh.knownHostsFile | quote }}
+              readOnly: true
+{{- end }}
 {{- if .Values.context.enabled }}
             - name: hermes-config
               mountPath: /opt/data/SOUL.md
@@ -129,3 +143,9 @@ spec:
             items:
               - key: {{ .Values.authJsonSecret.key | quote }}
                 path: auth.json
+{{- if .Values.gitSsh.enabled }}
+        - name: git-ssh
+          secret:
+            secretName: {{ .Values.gitSsh.secretName | quote }}
+            defaultMode: 0440
+{{- end }}

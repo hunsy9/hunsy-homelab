@@ -37,6 +37,12 @@ rbac:
     enabled: true
     namespace: argocd
 
+gitSsh:
+  enabled: true
+  secretName: hunsy-homelab-deploy-key
+  keyFile: id_ed25519
+  knownHostsFile: known_hosts
+
 env:
   apiServerEnabled: "true"
   apiServerHost: "0.0.0.0"
@@ -98,6 +104,7 @@ context:
     - Kubernetes write, Argo CD sync, Git push 같은 외부 상태 변경은 작업 범위를 명확히 한다.
     - 담당 범위는 클러스터 안쪽의 Kubernetes/GitOps 애플리케이션 개발과 운영 확인이다. 노드 OS/root/SSH 작업은 기본 범위가 아니다.
     - Docker socket, hostNetwork, 노드 SSH credential 없이 GitOps와 Kubernetes API를 통해 작업한다.
+    - GitHub push 권한은 `hunsy-homelab` repo 전용 deploy key로 제한한다.
     - 금융 관련 기능은 read-only를 기본으로 하며 주문/매매/정정/취소 endpoint는 구현하지 않는다.
 
   project: |
@@ -166,6 +173,7 @@ context:
     ## Developer Agent permission boundary
     - The developer runtime ServiceAccount may read non-secret Kubernetes workload resources and Pod logs.
     - It may patch Argo CD `Application` resources in the `argocd` namespace for refresh/sync workflows.
+    - It may push to the `hunsy-homelab` GitHub repository through a repository-scoped SSH deploy key.
     - It must not read Kubernetes Secrets, edit ClusterRoles/RBAC, mutate Nodes, delete namespaces/PVCs/PVs, or SSH to nodes unless a separate approved workflow is added.
 
 hermesConfig:

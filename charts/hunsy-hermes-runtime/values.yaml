@@ -32,6 +32,12 @@ rbac:
     enabled: false
     namespace: argocd
 
+gitSsh:
+  enabled: false
+  secretName: ""
+  keyFile: id_ed25519
+  knownHostsFile: known_hosts
+
 service:
   type: ClusterIP
   port: 8642
