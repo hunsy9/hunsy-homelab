@@ -126,6 +126,7 @@ context:
 
     ## GitOps repository
     - Homelab repo: `/workspace/hunsy-homelab` or Mac path `~/hunsy-platform/hunsy-homelab`.
+    - Repository map: `/workspace/hunsy-homelab/docs/repository-map.md`; read this before asking where app repositories live.
     - Argo CD apps-of-apps pattern.
     - Root app: `sites/root-app.yaml`.
     - Owned charts: `charts/<app>/`.
@@ -133,6 +134,11 @@ context:
     - Official upstream Helm charts are referenced directly from Argo CD Applications.
 
     ## Important apps
+    - Primary repo URLs:
+      - `hunsy-homelab`: `https://github.com/hunsy9/hunsy-homelab`
+      - `hunsy-asset-platform`: `https://github.com/hunsy9/hunsy-asset-platform`
+      - `hunsy-hermes-runtime`: `https://github.com/hunsy9/hunsy-hermes-runtime`
+      - `hunsy-discord-agent`: `https://github.com/hunsy9/hunsy-discord-agent` legacy/archive reference
     - `hunsy-asset-platform`: FastAPI asset API, Google Sheets source of truth, Toss Invest read-only price/account integration, snapshot CronJob.
     - `hunsy-assets-mcp`: read-only MCP server exposing `get_asset_summary` through the asset API.
     - `hunsy-hermes-runtime`: internal ClusterIP Hermes runtime using `openai-codex` + mounted `auth.json`.
