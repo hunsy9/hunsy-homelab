@@ -1,24 +1,24 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: hunsy-discord-agent
+  name: hunsy-hermes-developer-runtime
   namespace: argocd
 spec:
   project: default
   sources:
     - repoURL: https://github.com/hunsy9/hunsy-homelab.git
       targetRevision: main
-      path: charts/hunsy-discord-agent
+      path: charts/hunsy-hermes-runtime
       helm:
-        releaseName: hunsy-discord-agent
+        releaseName: hunsy-hermes-developer-runtime
         valueFiles:
-          - $values/sites/az/hunsy-discord-agent/values.yaml
+          - $values/sites/az/hunsy-hermes-developer-runtime/values.yaml
     - repoURL: https://github.com/hunsy9/hunsy-homelab.git
       targetRevision: main
       ref: values
   destination:
     server: https://kubernetes.default.svc
-    namespace: hunsy-discord-agent
+    namespace: hunsy-hermes-developer-runtime
   syncPolicy:
     automated:
       prune: true

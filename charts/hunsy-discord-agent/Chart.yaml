@@ -1,6 +1,0 @@
-apiVersion: v2
-name: hunsy-discord-agent
-description: Discord bot for Hunsy homelab services
-type: application
-version: 0.1.0
-appVersion: "0.1.0"

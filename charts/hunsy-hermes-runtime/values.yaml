@@ -2,6 +2,8 @@ namespace:
   create: true
   name: hunsy-hermes-runtime
 
+fullnameOverride: ""
+
 replicaCount: 1
 
 image:
@@ -14,6 +16,10 @@ imagePullSecrets:
 
 nodeSelector:
   kubernetes.io/hostname: k8s-worker-01
+
+podSecurityContext:
+  fsGroup: 999
+  fsGroupChangePolicy: OnRootMismatch
 
 service:
   type: ClusterIP
@@ -38,6 +44,24 @@ apiServerKeySecret:
 authJsonSecret:
   name: hermes-auth-json
   key: auth.json
+
+discord:
+  enabled: false
+  botTokenSecret:
+    name: discord-bot-token
+    key: token
+  allowedUsersSecret:
+    name: discord-allowed-users
+    key: users
+  homeChannel: ""
+  homeChannelName: ""
+  replyToMode: first
+
+context:
+  enabled: false
+  userCore: ""
+  soul: ""
+  project: ""
 
 hermesConfig:
   model:

@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Chart.Name | quote }}
+  name: {{ include "hunsy-hermes-runtime.name" . | quote }}
   namespace: {{ .Values.namespace.name | quote }}
   annotations:
     argocd.argoproj.io/sync-wave: "-1"
   labels:
-    app.kubernetes.io/name: {{ .Chart.Name | quote }}
+    app.kubernetes.io/name: {{ include "hunsy-hermes-runtime.name" . | quote }}
     app.kubernetes.io/instance: {{ .Release.Name | quote }}
 data:
   config.yaml: |
@@ -21,3 +21,14 @@ data:
 {{- end }}
     terminal:
       backend: {{ .Values.hermesConfig.terminal.backend | quote }}
+{{- if .Values.context.enabled }}
+  SOUL.md: |
+{{- with .Values.context.userCore }}
+{{ . | indent 4 }}
+{{- end }}
+{{- with .Values.context.soul }}
+{{ . | indent 4 }}
+{{- end }}
+  .hermes.md: |
+{{ .Values.context.project | indent 4 }}
+{{- end }}

@@ -1,27 +1,29 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Chart.Name | quote }}
+  name: {{ include "hunsy-hermes-runtime.name" . | quote }}
   namespace: {{ .Values.namespace.name | quote }}
   annotations:
     argocd.argoproj.io/sync-wave: "0"
   labels:
-    app.kubernetes.io/name: {{ .Chart.Name | quote }}
+    app.kubernetes.io/name: {{ include "hunsy-hermes-runtime.name" . | quote }}
     app.kubernetes.io/instance: {{ .Release.Name | quote }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ .Chart.Name | quote }}
+      app.kubernetes.io/name: {{ include "hunsy-hermes-runtime.name" . | quote }}
       app.kubernetes.io/instance: {{ .Release.Name | quote }}
   template:
     metadata:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
       labels:
-        app.kubernetes.io/name: {{ .Chart.Name | quote }}
+        app.kubernetes.io/name: {{ include "hunsy-hermes-runtime.name" . | quote }}
         app.kubernetes.io/instance: {{ .Release.Name | quote }}
     spec:
+      securityContext:
+{{ toYaml .Values.podSecurityContext | indent 8 }}
       imagePullSecrets:
 {{ toYaml .Values.imagePullSecrets | indent 8 }}
       nodeSelector:
@@ -46,6 +48,24 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.apiServerKeySecret.name | quote }}
                   key: {{ .Values.apiServerKeySecret.key | quote }}
+{{- if .Values.discord.enabled }}
+            - name: DISCORD_BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.discord.botTokenSecret.name | quote }}
+                  key: {{ .Values.discord.botTokenSecret.key | quote }}
+            - name: DISCORD_ALLOWED_USERS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.discord.allowedUsersSecret.name | quote }}
+                  key: {{ .Values.discord.allowedUsersSecret.key | quote }}
+            - name: DISCORD_HOME_CHANNEL
+              value: {{ .Values.discord.homeChannel | quote }}
+            - name: DISCORD_HOME_CHANNEL_NAME
+              value: {{ .Values.discord.homeChannelName | quote }}
+            - name: DISCORD_REPLY_TO_MODE
+              value: {{ .Values.discord.replyToMode | quote }}
+{{- end }}
           readinessProbe:
             httpGet:
               path: /health
@@ -63,6 +83,8 @@ spec:
             timeoutSeconds: 3
             failureThreshold: 6
           volumeMounts:
+            - name: hermes-data
+              mountPath: /opt/data
             - name: hermes-config
               mountPath: /opt/data/config.yaml
               subPath: config.yaml
@@ -71,12 +93,24 @@ spec:
               mountPath: /opt/data/auth.json
               subPath: auth.json
               readOnly: true
+{{- if .Values.context.enabled }}
+            - name: hermes-config
+              mountPath: /opt/data/SOUL.md
+              subPath: SOUL.md
+              readOnly: true
+            - name: hermes-config
+              mountPath: /workspace/.hermes.md
+              subPath: .hermes.md
+              readOnly: true
+{{- end }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
       volumes:
+        - name: hermes-data
+          emptyDir: {}
         - name: hermes-config
           configMap:
-            name: {{ .Chart.Name | quote }}
+            name: {{ include "hunsy-hermes-runtime.name" . | quote }}
         - name: hermes-auth-json
           secret:
             secretName: {{ .Values.authJsonSecret.name | quote }}
