@@ -4,7 +4,7 @@ namespace:
 
 image:
   repository: ghcr.io/hunsy9/hunsy-asset-platform/api-server
-  tag: sha-b1d0a5e
+  tag: sha-05c774f
   pullPolicy: IfNotPresent
 
 imagePullSecrets:
@@ -72,6 +72,25 @@ httpRoutes:
           - path:
               type: PathPrefix
               value: /assets
+        backendRefs:
+          - group: ""
+            kind: Service
+            name: hunsy-asset-platform-api
+            port: 80
+            weight: 1
+      - matches:
+          - path:
+              type: PathPrefix
+              value: /icons
+          - path:
+              type: Exact
+              value: /manifest.webmanifest
+          - path:
+              type: Exact
+              value: /sw.js
+          - path:
+              type: Exact
+              value: /offline.html
         backendRefs:
           - group: ""
             kind: Service

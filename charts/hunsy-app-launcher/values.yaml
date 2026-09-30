@@ -1,0 +1,46 @@
+namespace:
+  create: true
+  name: hunsy-app-launcher
+
+image:
+  repository: ghcr.io/hunsy9/hunsy-app-launcher
+  tag: web-latest
+  pullPolicy: IfNotPresent
+
+imagePullSecrets:
+  - name: ghcr-pull-secret
+
+replicaCount: 1
+
+nodeSelector:
+  kubernetes.io/hostname: k8s-worker-01
+
+service:
+  name: hunsy-app-launcher
+  port: 80
+  targetPort: 8080
+
+httpRoute:
+  enabled: true
+  name: hunsy-app-launcher
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public-gateway
+      namespace: gateway-system
+      sectionName: http
+  hostnames:
+    - app.seung.site
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: hunsy-app-launcher
+          port: 80
+          weight: 1
+
+resources: {}

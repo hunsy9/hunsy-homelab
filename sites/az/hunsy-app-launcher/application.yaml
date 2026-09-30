@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hunsy-app-launcher
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: https://github.com/hunsy9/hunsy-homelab.git
+      targetRevision: main
+      path: charts/hunsy-app-launcher
+      helm:
+        releaseName: hunsy-app-launcher
+        valueFiles:
+          - $values/sites/az/hunsy-app-launcher/values.yaml
+    - repoURL: https://github.com/hunsy9/hunsy-homelab.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: hunsy-hermes-runtime
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
