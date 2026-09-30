@@ -4,13 +4,19 @@ namespace:
 
 image:
   repository: ghcr.io/hunsy9/hunsy-ops-dashboard
-  tag: web-sha-a762bf3
+  tag: web-sha-c36c7f5
   pullPolicy: IfNotPresent
 
 imagePullSecrets:
   - name: ghcr-pull-secret
 
 replicaCount: 1
+
+serviceAccount:
+  name: hunsy-ops-dashboard
+
+nodeMetrics:
+  enabled: true
 
 nodeSelector:
   kubernetes.io/hostname: k8s-worker-01
