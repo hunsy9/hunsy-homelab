@@ -59,13 +59,15 @@ discord:
   allowedUsersSecret:
     name: discord-allowed-users
     key: users
-  homeChannel: ""
+  homeChannel: "1553792165853794355"
   homeChannelName: 자산관리
   replyToMode: first
   requireMention: "true"
-  freeResponseChannels: []
+  freeResponseChannels:
+    - "1553792165853794355"
   freeResponseAutoThread: "false"
-  allowedChannels: []
+  allowedChannels:
+    - "1553792165853794355"
 
 context:
   enabled: true
