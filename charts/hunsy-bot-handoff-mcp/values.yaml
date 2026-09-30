@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: ghcr.io/hunsy9/hunsy-asset-platform/bot-handoff-mcp
-  tag: sha-baf3601
+  tag: sha-6c1bb2e
   pullPolicy: IfNotPresent
 
 imagePullSecrets:
@@ -40,6 +40,8 @@ templates:
     description: 자산/MCP/API/Sheet 이상 징후를 개바리에게 점검 요청한다.
     sourceAgent: 자사니
     targetAgent: 개바리
+    targetMention: "<@1553790381391483071>"
+    targetUserId: "1553790381391483071"
     channelId: "1554832000777461840"
     guildId: "1553775026774216905"
     threadNameTemplate: "[자사니] {{ title }}"
@@ -54,7 +56,7 @@ templates:
 
       사용자 승인: 있음
       출발 봇: 자사니
-      대상 봇: 개바리
+      대상 봇: {{ targetMention }} 개바리
       분야: 자산관리 / MCP / API / Sheet
 
       증상:

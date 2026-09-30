@@ -4,7 +4,7 @@ namespace:
 
 image:
   repository: ghcr.io/hunsy9/hunsy-asset-platform/bot-handoff-mcp
-  tag: sha-baf3601
+  tag: sha-6c1bb2e
   pullPolicy: IfNotPresent
 
 imagePullSecrets:
