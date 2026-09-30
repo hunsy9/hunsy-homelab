@@ -5,7 +5,7 @@ metadata:
   name: {{ include "hunsy-hermes-runtime.name" . | quote }}
   namespace: {{ .Values.namespace.name | quote }}
   annotations:
-    argocd.argoproj.io/sync-wave: "-1"
+    argocd.argoproj.io/sync-wave: "0"
 spec:
   accessModes:
 {{ toYaml .Values.persistence.accessModes | indent 4 }}
