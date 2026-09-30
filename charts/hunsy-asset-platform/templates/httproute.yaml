@@ -1,4 +1,27 @@
-{{- if .Values.httpRoute.enabled }}
+{{- if .Values.httpRoutes }}
+{{- range .Values.httpRoutes }}
+{{- if .enabled }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ .name | quote }}
+  namespace: {{ $.Values.namespace.name | quote }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  labels:
+    app.kubernetes.io/name: {{ $.Chart.Name | quote }}
+    app.kubernetes.io/instance: {{ $.Release.Name | quote }}
+spec:
+  parentRefs:
+{{ toYaml .parentRefs | indent 4 }}
+  hostnames:
+{{ toYaml .hostnames | indent 4 }}
+  rules:
+{{ toYaml .rules | indent 4 }}
+{{- end }}
+{{- end }}
+{{- else if .Values.httpRoute.enabled }}
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:

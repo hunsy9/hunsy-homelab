@@ -4,7 +4,7 @@ namespace:
 
 image:
   repository: ghcr.io/hunsy9/hunsy-asset-platform/api-server
-  tag: sha-4a6fae2
+  tag: sha-8f1bd51
   pullPolicy: IfNotPresent
 
 imagePullSecrets:
@@ -46,25 +46,46 @@ snapshotCronJob:
   failedJobsHistoryLimit: 3
   backoffLimit: 2
 
-httpRoute:
-  enabled: true
-  name: hunsy-asset-platform-api
-  parentRefs:
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: public-gateway
-      namespace: gateway-system
-      sectionName: http
-  hostnames:
-    - asset.seung.site
-  rules:
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /
-      backendRefs:
-        - group: ""
-          kind: Service
-          name: hunsy-asset-platform-api
-          port: 80
-          weight: 1
+httpRoutes:
+  - enabled: true
+    name: hunsy-asset-dashboard
+    parentRefs:
+      - group: gateway.networking.k8s.io
+        kind: Gateway
+        name: public-gateway
+        namespace: gateway-system
+        sectionName: http
+    hostnames:
+      - asset.seung.site
+    rules:
+      - matches:
+          - path:
+              type: Exact
+              value: /
+        backendRefs:
+          - group: ""
+            kind: Service
+            name: hunsy-asset-platform-api
+            port: 80
+            weight: 1
+  - enabled: true
+    name: hunsy-asset-api
+    parentRefs:
+      - group: gateway.networking.k8s.io
+        kind: Gateway
+        name: public-gateway
+        namespace: gateway-system
+        sectionName: http
+    hostnames:
+      - api.asset.seung.site
+    rules:
+      - matches:
+          - path:
+              type: PathPrefix
+              value: /
+        backendRefs:
+          - group: ""
+            kind: Service
+            name: hunsy-asset-platform-api
+            port: 80
+            weight: 1
