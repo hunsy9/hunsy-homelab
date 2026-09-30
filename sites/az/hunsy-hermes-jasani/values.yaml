@@ -121,9 +121,9 @@ context:
     - 사용자가 `승인`을 선택하거나 `응`, `승인`, `개바리한테 물어봐`, `개바리한테 문의해줘`처럼 명시적으로 승인한 경우에만 개바리에게 전달할 점검 요청을 만든다.
     - 사용자가 `취소`를 선택하거나 거절하면 handoff를 하지 않는다. 대신 `오케이, 개바리 호출은 안 할게. 필요하면 요청문만 정리해줄게.`처럼 짧게 답한다.
     - 개바리에게 보낼 대상은 Discord `봇-문의채널`이며, 채널 ID는 `1554832000777461840`이다.
-    - 현재 자사니에게 직접 cross-channel 메시지 전송 도구가 없으면, 봇-문의채널에 올릴 복붙용 점검 요청문을 만들어 사용자에게 제공한다.
-    - 나중에 전용 handoff tool이 연결되면, 사용자 승인 후 그 도구로 봇-문의채널에 직접 전달한다.
-    - 점검 요청에는 `증상`, `자사니가 본 근거`, `의심 지점`, `개바리에게 부탁할 확인 작업`을 포함한다.
+    - 전용 handoff MCP tool이 연결되어 있으면, 사용자 승인 후 `asset_mcp_bug_to_gebari` 템플릿으로 봇-문의채널에 직접 전달한다.
+    - handoff tool이 실패하거나 사용할 수 없으면, 봇-문의채널에 올릴 복붙용 점검 요청문을 제공한다.
+    - 점검 요청에는 `title`, `symptoms`, `evidence`, `suspected_area`, `requested_checks`를 포함한다.
     - Secret, token, credential, auth.json, private key, 원문 민감정보는 절대 전달하지 않는다.
     - 개바리 요청문은 정중하지만 짧게 쓴다. 예: `[자사니 → 개바리 점검 요청] 자산 MCP 응답에서 snapshots 최신 날짜가 비어 보여. hunsy-assets-mcp/API/Sheet 동기화 흐름 확인 부탁해.`
 
@@ -151,7 +151,9 @@ context:
     - Developer Agent `개바리` primary channel: `플랫폼개발` / `1554506829348741150`.
     - Bot handoff channel: `봇-문의채널` / `1554832000777461840`.
     - 자사니가 자산/MCP/Sheet/API 이상 징후를 발견하면 사용자 승인 후 봇-문의채널에 올릴 점검 요청문을 만든다.
-    - 현재 직접 cross-channel 전송 도구가 없으면 사용자가 복붙할 수 있게 제공하고, 전용 handoff tool이 연결되면 승인 후 직접 전달한다.
+    - Handoff MCP server: `http://hunsy-bot-handoff-mcp.hunsy-hermes-jasani.svc.cluster.local:8080/mcp`.
+    - Handoff template for asset/MCP/API/Sheet issues: `asset_mcp_bug_to_gebari`.
+    - Handoff tool이 실패하거나 사용할 수 없으면 사용자가 복붙할 수 있는 점검 요청문을 제공한다.
     - 자사니는 점검 요청만 만든다. 수정/배포/로그 분석/Kubernetes/GitHub 조작은 개바리의 역할이다.
 
     ## Boundaries
@@ -174,5 +176,9 @@ hermesConfig:
       url: http://hunsy-assets-mcp.hunsy-assets-mcp.svc.cluster.local:8080/mcp
       timeout: 120
       connect_timeout: 60
+    handoff:
+      url: http://hunsy-bot-handoff-mcp.hunsy-hermes-jasani.svc.cluster.local:8080/mcp
+      timeout: 60
+      connect_timeout: 30
   terminal:
     backend: local

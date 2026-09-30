@@ -1,0 +1,6 @@
+apiVersion: v2
+name: hunsy-bot-handoff-mcp
+description: Template-driven bot-to-bot handoff MCP server for Hunsy Hermes agents
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

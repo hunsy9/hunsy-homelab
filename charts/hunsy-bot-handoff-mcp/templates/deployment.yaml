@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name | quote }}
+  namespace: {{ .Values.namespace.name | quote }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Chart.Name | quote }}
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Chart.Name | quote }}
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    spec:
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 8 }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+      containers:
+        - name: bot-handoff-mcp
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          env:
+            - name: BOT_HANDOFF_MCP_DISCORD_BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.discord.botTokenSecret.name | quote }}
+                  key: {{ .Values.discord.botTokenSecret.key | quote }}
+            - name: BOT_HANDOFF_MCP_TEMPLATES_FILE
+              value: /app/config/templates.json
+            - name: BOT_HANDOFF_MCP_DEFAULT_CHANNEL_ID
+              value: {{ .Values.env.defaultChannelId | quote }}
+            - name: BOT_HANDOFF_MCP_DEFAULT_GUILD_ID
+              value: {{ .Values.env.defaultGuildId | quote }}
+            - name: BOT_HANDOFF_MCP_REQUEST_TIMEOUT_SECONDS
+              value: {{ .Values.env.requestTimeoutSeconds | quote }}
+            - name: BOT_HANDOFF_MCP_MAX_TITLE_CHARS
+              value: {{ .Values.env.maxTitleChars | quote }}
+            - name: BOT_HANDOFF_MCP_MAX_MESSAGE_CHARS
+              value: {{ .Values.env.maxMessageChars | quote }}
+            - name: BOT_HANDOFF_MCP_MAX_FIELD_CHARS
+              value: {{ .Values.env.maxFieldChars | quote }}
+            - name: BOT_HANDOFF_MCP_MAX_LIST_ITEMS
+              value: {{ .Values.env.maxListItems | quote }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.targetPort }}
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 12
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 6
+          volumeMounts:
+            - name: handoff-templates
+              mountPath: /app/config/templates.json
+              subPath: templates.json
+              readOnly: true
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+      volumes:
+        - name: handoff-templates
+          configMap:
+            name: {{ .Chart.Name | quote }}

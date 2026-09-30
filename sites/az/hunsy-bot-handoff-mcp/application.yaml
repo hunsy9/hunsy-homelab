@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hunsy-bot-handoff-mcp
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: https://github.com/hunsy9/hunsy-homelab.git
+      targetRevision: main
+      path: charts/hunsy-bot-handoff-mcp
+      helm:
+        releaseName: hunsy-bot-handoff-mcp
+        valueFiles:
+          - $values/sites/az/hunsy-bot-handoff-mcp/values.yaml
+    - repoURL: https://github.com/hunsy9/hunsy-homelab.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: hunsy-hermes-jasani
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true

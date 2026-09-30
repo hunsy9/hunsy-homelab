@@ -1,0 +1,82 @@
+namespace:
+  create: false
+  name: hunsy-hermes-jasani
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/hunsy9/hunsy-asset-platform/bot-handoff-mcp
+  tag: sha-baf3601
+  pullPolicy: IfNotPresent
+
+imagePullSecrets:
+  - name: ghcr-pull-secret
+
+nodeSelector:
+  kubernetes.io/hostname: k8s-worker-01
+
+service:
+  name: hunsy-bot-handoff-mcp
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+discord:
+  botTokenSecret:
+    name: jasani-discord-bot-token
+    key: token
+
+env:
+  defaultChannelId: "1554832000777461840"
+  defaultGuildId: "1553775026774216905"
+  requestTimeoutSeconds: "15"
+  maxTitleChars: "90"
+  maxMessageChars: "1800"
+  maxFieldChars: "900"
+  maxListItems: "12"
+
+templates:
+  asset_mcp_bug_to_gebari:
+    description: 자산/MCP/API/Sheet 이상 징후를 개바리에게 점검 요청한다.
+    sourceAgent: 자사니
+    targetAgent: 개바리
+    channelId: "1554832000777461840"
+    guildId: "1553775026774216905"
+    threadNameTemplate: "[자사니] {{ title }}"
+    requiredFields:
+      - title
+      - symptoms
+      - evidence
+      - suspected_area
+      - requested_checks
+    bodyTemplate: |
+      [자사니 → 개바리 점검 요청]
+
+      사용자 승인: 있음
+      출발 봇: 자사니
+      대상 봇: 개바리
+      분야: 자산관리 / MCP / API / Sheet
+
+      증상:
+      {{ symptoms }}
+
+      자사니가 본 근거:
+      {{ evidence }}
+
+      의심 지점:
+      {{ suspected_area }}
+
+      개바리에게 부탁할 확인 작업:
+      {{ requested_checks }}
+
+      주의:
+      - 민감 인증정보나 비공개 키 값은 조회/출력하지 말 것
+      - 주문/매매/정정/취소 기능은 구현하지 말 것
+      - 필요하면 변경 전 원인과 수정 범위를 먼저 보고할 것
+
+resources:
+  requests:
+    cpu: 25m
+    memory: 64Mi
+  limits:
+    memory: 256Mi
