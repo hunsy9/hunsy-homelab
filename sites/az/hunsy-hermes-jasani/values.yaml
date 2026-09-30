@@ -12,6 +12,9 @@ image:
 imagePullSecrets:
   - name: ghcr-pull-secret
 
+podAnnotations:
+  kubectl.kubernetes.io/restartedAt: "2026-09-30T14:09:29Z"
+
 nodeSelector:
   kubernetes.io/hostname: k8s-worker-01
 
