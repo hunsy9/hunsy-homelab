@@ -97,9 +97,9 @@ spec:
 {{- if not .Values.githubCredentials.enabled }}
             - name: GIT_ASKPASS
               value: /opt/data/git-askpass.sh
-{{- end }}
             - name: GIT_TERMINAL_PROMPT
               value: "0"
+{{- end }}
 {{- end }}
 {{- if .Values.githubCredentials.enabled }}
             - name: GH_CONFIG_DIR
