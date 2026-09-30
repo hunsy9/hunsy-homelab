@@ -4,7 +4,7 @@ namespace:
 
 image:
   repository: ghcr.io/hunsy9/hunsy-realestate-proto
-  tag: web-sha-db9dc4d
+  tag: web-sha-33b34a1
   pullPolicy: IfNotPresent
 
 imagePullSecrets:
