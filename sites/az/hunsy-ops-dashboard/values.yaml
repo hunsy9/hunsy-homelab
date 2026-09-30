@@ -4,7 +4,7 @@ namespace:
 
 image:
   repository: ghcr.io/hunsy9/hunsy-ops-dashboard
-  tag: web-sha-1205509
+  tag: web-sha-707cfe7
   pullPolicy: IfNotPresent
 
 imagePullSecrets:
