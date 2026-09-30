@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hunsy-ops-dashboard
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: https://github.com/hunsy9/hunsy-homelab.git
+      targetRevision: main
+      path: charts/hunsy-ops-dashboard
+      helm:
+        releaseName: hunsy-ops-dashboard
+        valueFiles:
+          - $values/sites/az/hunsy-ops-dashboard/values.yaml
+    - repoURL: https://github.com/hunsy9/hunsy-homelab.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: hunsy-ops-dashboard
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

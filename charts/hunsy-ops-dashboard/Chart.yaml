@@ -1,0 +1,6 @@
+apiVersion: v2
+name: hunsy-ops-dashboard
+description: Mobile-first Hunsy operations dashboard PWA with Gateway API HTTPRoute
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

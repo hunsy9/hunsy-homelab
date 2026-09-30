@@ -1,0 +1,46 @@
+namespace:
+  create: true
+  name: hunsy-ops-dashboard
+
+image:
+  repository: ghcr.io/hunsy9/hunsy-ops-dashboard
+  tag: web-sha-9f460a2
+  pullPolicy: IfNotPresent
+
+imagePullSecrets:
+  - name: ghcr-pull-secret
+
+replicaCount: 1
+
+nodeSelector:
+  kubernetes.io/hostname: k8s-worker-01
+
+service:
+  name: hunsy-ops-dashboard
+  port: 80
+  targetPort: 8080
+
+httpRoute:
+  enabled: true
+  name: hunsy-ops-dashboard
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public-gateway
+      namespace: gateway-system
+      sectionName: http
+  hostnames:
+    - ops.seung.site
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: hunsy-ops-dashboard
+          port: 80
+          weight: 1
+
+resources: {}
