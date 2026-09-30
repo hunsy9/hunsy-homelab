@@ -46,6 +46,7 @@ hermesConfig:
     default: gpt-5.5
   toolsets:
     - hermes-api-server
+    - web
   mcp_servers:
     asset:
       url: http://hunsy-assets-mcp.hunsy-assets-mcp.svc.cluster.local:8080/mcp
