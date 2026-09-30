@@ -1,0 +1,6 @@
+apiVersion: v2
+name: local-path-provisioner
+description: Lightweight local-path dynamic provisioner for the homelab cluster
+type: application
+version: 0.1.0
+appVersion: v0.0.37

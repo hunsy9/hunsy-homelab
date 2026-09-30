@@ -1,0 +1,36 @@
+namespace:
+  create: true
+  name: local-path-storage
+
+image:
+  repository: docker.io/rancher/local-path-provisioner
+  tag: v0.0.37
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+storageClass:
+  create: true
+  name: local-path
+  defaultClass: false
+  reclaimPolicy: Delete
+  volumeBindingMode: WaitForFirstConsumer
+
+nodePathMap:
+  - node: DEFAULT_PATH_FOR_NON_LISTED_NODES
+    paths:
+      - /opt/local-path-provisioner
+
+helperPod:
+  image: docker.io/library/busybox
+  imagePullPolicy: IfNotPresent
+
+nodeSelector:
+  kubernetes.io/hostname: k8s-worker-01
+
+resources:
+  requests:
+    cpu: 20m
+    memory: 64Mi
+  limits:
+    memory: 256Mi
