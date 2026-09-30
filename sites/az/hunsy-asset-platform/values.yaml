@@ -4,13 +4,13 @@ namespace:
 
 image:
   repository: ghcr.io/hunsy9/hunsy-asset-platform/api-server
-  tag: sha-2c0a582
+  tag: sha-950aaba
   pullPolicy: IfNotPresent
 
 imagePullSecrets:
   - name: ghcr-pull-secret
 
-replicaCount: 1
+replicaCount: 2
 
 nodeSelector:
   kubernetes.io/hostname: k8s-worker-01
