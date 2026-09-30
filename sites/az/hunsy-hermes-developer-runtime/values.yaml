@@ -6,7 +6,7 @@ fullnameOverride: hunsy-hermes-developer-runtime
 
 image:
   repository: ghcr.io/hunsy9/hunsy-hermes-runtime
-  tag: sha-cf26947
+  tag: sha-5284cdf
   pullPolicy: IfNotPresent
 
 imagePullSecrets:
