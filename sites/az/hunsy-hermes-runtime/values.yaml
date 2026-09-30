@@ -13,6 +13,9 @@ imagePullSecrets:
 nodeSelector:
   kubernetes.io/hostname: k8s-worker-01
 
+podAnnotations:
+  kubectl.kubernetes.io/restartedAt: "2026-09-30T12:34:15Z"
+
 service:
   type: ClusterIP
   port: 8642

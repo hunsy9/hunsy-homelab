@@ -21,6 +21,8 @@ podSecurityContext:
   fsGroup: 999
   fsGroupChangePolicy: OnRootMismatch
 
+podAnnotations: {}
+
 persistence:
   enabled: false
   existingClaim: ""
