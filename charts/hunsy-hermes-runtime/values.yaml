@@ -21,6 +21,15 @@ podSecurityContext:
   fsGroup: 999
   fsGroupChangePolicy: OnRootMismatch
 
+persistence:
+  enabled: false
+  existingClaim: ""
+  storageClassName: local-path
+  accessModes:
+    - ReadWriteOnce
+  size: 20Gi
+  seedMarker: .hermes-data-seeded
+
 serviceAccount:
   create: false
   name: ""

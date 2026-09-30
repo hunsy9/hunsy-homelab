@@ -15,6 +15,14 @@ imagePullSecrets:
 nodeSelector:
   kubernetes.io/hostname: k8s-worker-01
 
+persistence:
+  enabled: true
+  storageClassName: local-path
+  accessModes:
+    - ReadWriteOnce
+  size: 20Gi
+  seedMarker: .hermes-data-seeded
+
 service:
   type: ClusterIP
   port: 8642
