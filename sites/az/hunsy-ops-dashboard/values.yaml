@@ -1,6 +1,6 @@
 namespace:
-  create: true
-  name: hunsy-ops-dashboard
+  create: false
+  name: hunsy-hermes-runtime
 
 image:
   repository: ghcr.io/hunsy9/hunsy-ops-dashboard
