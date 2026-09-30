@@ -48,6 +48,10 @@ githubToken:
   secretName: github-developer-token
   key: token
 
+githubCredentials:
+  enabled: true
+  secretName: github-developer-credentials
+
 env:
   apiServerEnabled: "true"
   apiServerHost: "0.0.0.0"
@@ -116,7 +120,7 @@ context:
     - Kubernetes write, Argo CD sync, Git push 같은 외부 상태 변경은 작업 범위를 명확히 한다.
     - 담당 범위는 클러스터 안쪽의 Kubernetes/GitOps 애플리케이션 개발과 운영 확인이다. 노드 OS/root/SSH 작업은 기본 범위가 아니다.
     - Docker socket, hostNetwork, 노드 SSH credential 없이 GitOps와 Kubernetes API를 통해 작업한다.
-    - GitHub 작업은 Kubernetes Secret `github-developer-token`으로 주입된 `GH_TOKEN`/`GITHUB_TOKEN`을 사용한다. 토큰 값은 절대 출력하지 않는다.
+    - GitHub 작업은 Kubernetes Secret `github-developer-token` env와 `github-developer-credentials` credential store를 사용한다. 토큰 값과 credential 파일 내용은 절대 출력하지 않는다.
     - 금융 관련 기능은 read-only를 기본으로 하며 주문/매매/정정/취소 endpoint는 구현하지 않는다.
 
   project: |
@@ -191,7 +195,7 @@ context:
     ## Developer Agent permission boundary
     - The developer runtime ServiceAccount may read non-secret Kubernetes workload resources and Pod logs.
     - It may patch Argo CD `Application` resources in the `argocd` namespace for refresh/sync workflows.
-    - It may use `GH_TOKEN`/`GITHUB_TOKEN` for GitHub CLI and HTTPS git operations, including private repo clone/push and user-approved new repo creation.
+    - It may use GitHub CLI and HTTPS git operations through the mounted `github-developer-credentials` store, including private repo clone/push and user-approved new repo creation. Do not print tokens or credential file contents.
     - It must not read Kubernetes Secrets, edit ClusterRoles/RBAC, mutate Nodes, delete namespaces/PVCs/PVs, or SSH to nodes unless a separate approved workflow is added.
 
 hermesConfig:

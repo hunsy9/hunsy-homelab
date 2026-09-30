@@ -72,6 +72,12 @@ spec:
             - name: GIT_TERMINAL_PROMPT
               value: "0"
 {{- end }}
+{{- if .Values.githubCredentials.enabled }}
+            - name: GH_CONFIG_DIR
+              value: /opt/data/github-credentials/gh
+            - name: GIT_CONFIG_GLOBAL
+              value: /opt/data/github-credentials/gitconfig
+{{- end }}
 {{- if .Values.discord.enabled }}
             - name: DISCORD_BOT_TOKEN
               valueFrom:
@@ -133,6 +139,11 @@ spec:
               subPath: git-askpass.sh
               readOnly: true
 {{- end }}
+{{- if .Values.githubCredentials.enabled }}
+            - name: github-credentials
+              mountPath: /opt/data/github-credentials
+              readOnly: true
+{{- end }}
 {{- if .Values.gitSsh.enabled }}
             - name: git-ssh
               mountPath: /opt/data/.ssh/id_ed25519
@@ -166,6 +177,19 @@ spec:
             items:
               - key: {{ .Values.authJsonSecret.key | quote }}
                 path: auth.json
+{{- if .Values.githubCredentials.enabled }}
+        - name: github-credentials
+          secret:
+            secretName: {{ .Values.githubCredentials.secretName | quote }}
+            defaultMode: 0440
+            items:
+              - key: hosts.yml
+                path: gh/hosts.yml
+              - key: git-credentials
+                path: git-credentials
+              - key: gitconfig
+                path: gitconfig
+{{- end }}
 {{- if .Values.gitSsh.enabled }}
         - name: git-ssh
           secret:

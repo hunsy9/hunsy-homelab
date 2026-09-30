@@ -43,6 +43,10 @@ githubToken:
   secretName: ""
   key: token
 
+githubCredentials:
+  enabled: false
+  secretName: ""
+
 service:
   type: ClusterIP
   port: 8642
