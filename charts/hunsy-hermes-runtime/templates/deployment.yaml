@@ -67,8 +67,10 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.githubToken.secretName | quote }}
                   key: {{ .Values.githubToken.key | quote }}
+{{- if not .Values.githubCredentials.enabled }}
             - name: GIT_ASKPASS
               value: /opt/data/git-askpass.sh
+{{- end }}
             - name: GIT_TERMINAL_PROMPT
               value: "0"
 {{- end }}
@@ -77,6 +79,10 @@ spec:
               value: /opt/data/github-credentials/gh
             - name: GIT_CONFIG_GLOBAL
               value: /opt/data/github-credentials/gitconfig
+            - name: GIT_ASKPASS
+              value: /opt/data/github-credentials/git-askpass.sh
+            - name: GIT_TERMINAL_PROMPT
+              value: "0"
 {{- end }}
 {{- if .Values.discord.enabled }}
             - name: DISCORD_BOT_TOKEN
@@ -189,6 +195,9 @@ spec:
                 path: git-credentials
               - key: gitconfig
                 path: gitconfig
+              - key: git-askpass.sh
+                path: git-askpass.sh
+                mode: 0550
 {{- end }}
 {{- if .Values.gitSsh.enabled }}
         - name: git-ssh
