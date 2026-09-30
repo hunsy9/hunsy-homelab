@@ -144,6 +144,10 @@ spec:
             - name: DISCORD_ALLOWED_CHANNELS
               value: {{ join "," . | quote }}
 {{- end }}
+{{- with .Values.discord.allowBots }}
+            - name: DISCORD_ALLOW_BOTS
+              value: {{ . | quote }}
+{{- end }}
 {{- end }}
           readinessProbe:
             httpGet:

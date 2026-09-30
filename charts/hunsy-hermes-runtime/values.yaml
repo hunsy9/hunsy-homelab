@@ -95,6 +95,7 @@ discord:
   freeResponseChannels: []
   freeResponseAutoThread: "false"
   allowedChannels: []
+  allowBots: ""
 
 context:
   enabled: false
