@@ -68,24 +68,3 @@ httpRoutes:
             name: hunsy-asset-platform-api
             port: 80
             weight: 1
-  - enabled: true
-    name: hunsy-asset-api
-    parentRefs:
-      - group: gateway.networking.k8s.io
-        kind: Gateway
-        name: public-gateway
-        namespace: gateway-system
-        sectionName: http
-    hostnames:
-      - api.asset.seung.site
-    rules:
-      - matches:
-          - path:
-              type: PathPrefix
-              value: /
-        backendRefs:
-          - group: ""
-            kind: Service
-            name: hunsy-asset-platform-api
-            port: 80
-            weight: 1
