@@ -37,7 +37,6 @@ httpRoute:
       sectionName: http
   hostnames:
     - ops.seung.site
-    - app.seung.site
   rules:
     - matches:
         - path:

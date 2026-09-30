@@ -4,13 +4,19 @@ namespace:
 
 image:
   repository: ghcr.io/hunsy9/hunsy-app-launcher
-  tag: web-sha-fa8235a
+  tag: web-sha-5e5c874
   pullPolicy: IfNotPresent
 
 imagePullSecrets:
   - name: ghcr-pull-secret
 
 replicaCount: 1
+
+serviceAccount:
+  name: hunsy-app-launcher
+
+nodeMetrics:
+  enabled: true
 
 nodeSelector:
   kubernetes.io/hostname: k8s-worker-01
@@ -48,5 +54,5 @@ resources:
     cpu: 10m
     memory: 24Mi
   limits:
-    cpu: 100m
-    memory: 96Mi
+    cpu: 200m
+    memory: 160Mi

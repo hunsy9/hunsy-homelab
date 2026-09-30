@@ -20,6 +20,9 @@ spec:
         app.kubernetes.io/name: {{ .Chart.Name | quote }}
         app.kubernetes.io/instance: {{ .Release.Name | quote }}
     spec:
+      {{- if .Values.serviceAccount.name }}
+      serviceAccountName: {{ .Values.serviceAccount.name | quote }}
+      {{- end }}
       imagePullSecrets:
 {{ toYaml .Values.imagePullSecrets | indent 8 }}
       nodeSelector:
