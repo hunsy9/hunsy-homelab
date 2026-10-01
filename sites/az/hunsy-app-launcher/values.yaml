@@ -4,7 +4,7 @@ namespace:
 
 image:
   repository: ghcr.io/hunsy9/hunsy-app-launcher
-  tag: web-sha-5ecf63f
+  tag: web-sha-ecb1f92
   pullPolicy: IfNotPresent
 
 imagePullSecrets:
