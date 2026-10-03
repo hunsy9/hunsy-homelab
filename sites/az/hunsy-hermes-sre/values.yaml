@@ -105,9 +105,7 @@ discord:
     - "1554506829348741150"
     # alert
     - "1553775827307601990"
-  # Alertmanager/Discord webhook messages are bot-authored and usually do not mention 스리.
-  # Platform channel is not in freeResponseChannels, so this does not make 스리 join ordinary platform chatter.
-  allowBots: "all"
+  allowBots: "mentions"
 
 context:
   enabled: true
