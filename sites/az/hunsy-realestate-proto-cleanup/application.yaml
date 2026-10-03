@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hunsy-realestate-proto
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    - repoURL: https://github.com/hunsy9/hunsy-homelab.git
+      targetRevision: main
+      path: charts/cleanup-tombstone
+      helm:
+        releaseName: hunsy-realestate-proto
+        values: |
+          namespace:
+            name: ""
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: hunsy-hermes-runtime
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
