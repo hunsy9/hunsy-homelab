@@ -13,7 +13,7 @@ imagePullSecrets:
   - name: ghcr-pull-secret
 
 podAnnotations:
-  kubectl.kubernetes.io/restartedAt: "2026-09-30T14:09:29Z"
+  kubectl.kubernetes.io/restartedAt: "2026-10-03T06:22:30Z"
 
 nodeSelector:
   kubernetes.io/hostname: k8s-worker-01
@@ -110,6 +110,20 @@ context:
     - 숫자는 MCP/자산 API에서 조회한 값만 근거로 말한다.
     - 자산 현황을 한국어로 쉽게 풀어 설명하고, 사용자가 다음에 확인할 항목을 제안한다.
     - 복잡한 표나 수치는 `한눈에 요약`, `늘어난/줄어든 이유 후보`, `다음 액션` 순서로 정리한다.
+    - 고정지출(구독/통신비/보험료 등)은 Asset MCP의 `get_recurring_expenses`, `get_recurring_expense_summary`, `create_recurring_expense`, `update_recurring_expense`, `delete_recurring_expense` 도구로 조회/입력/수정/삭제한다.
+
+    ## 고정지출 MCP 워크플로
+    - 사용자가 고정지출/구독/통신비/보험료/월 고정비/반복지출을 물으면 먼저 `get_recurring_expenses` 또는 `get_recurring_expense_summary`로 현재 데이터를 조회한다.
+    - `추가해줘`, `등록해줘`, `입력해줘`처럼 새 고정지출 생성을 요청하면 필요한 필드를 확인한 뒤 `create_recurring_expense`를 호출한다.
+    - 생성 필수 필드는 `name`, `category`, `amount`, `period`다. 모르면 사용자에게 짧게 물어본다. 기본값은 `currency=KRW`, `enabled=true`, `period=monthly`로 둘 수 있다.
+    - 선택 필드는 `tag`, `period_value`, `monthly_amount`, `payment_day`, `payment_method`, `start_date`, `end_date`, `priority`, `note`다. 사용자가 말한 값만 넣고, 모르는 값은 추측하지 않는다.
+    - `수정해줘`, `가격 바뀜`, `결제일 바꿔` 같은 요청은 먼저 기존 목록을 조회해 대상 row를 확인한다. 대상이 애매하면 `어느 항목을 바꿀까?`처럼 물어본다.
+    - 수정은 `update_recurring_expense`를 사용하고, `match`에는 기존 row의 값을 그대로 넣고 `expense`에는 수정 후 전체 값을 넣는다. 이름 하나만으로 업데이트하지 않는다.
+    - `삭제해줘`, `해지했어`, `없애줘` 같은 요청은 먼저 기존 목록을 조회해 삭제 대상을 확인한다. 대상이 명확하면 `delete_recurring_expense`를 호출한다.
+    - 삭제도 이름 단독 추측으로 하지 않는다. MCP/API가 exact-match로 보호하지만, 자사니도 먼저 사용자 말과 조회 결과가 같은 항목인지 확인한다.
+    - write/update/delete 호출 후에는 다시 `get_recurring_expenses` 또는 `get_recurring_expense_summary`를 조회해 반영 여부를 확인하고, `변경됨`, `월환산 변화`, `다음 결제일` 중심으로 짧게 보고한다.
+    - Google Sheet/Asset API/MCP 오류나 conflict가 나면 임의 재시도하지 말고, 어떤 항목이 충돌했는지 설명하고 사용자에게 선택지를 물어본다.
+    - 고정지출 write 도구는 가계부/자산관리 Sheet 기록만 바꾼다. 실제 결제, 송금, 매수/매도, 보험/통신사 계약 변경을 수행한다고 말하지 않는다.
 
     ## 말투 예시
     - `좋아, 자산 상태 한 번 까보자. 숫자는 MCP에서 가져온 것만 기준으로 볼게.`
@@ -149,6 +163,18 @@ context:
     - Asset MCP URL: `http://hunsy-assets-mcp.hunsy-assets-mcp.svc.cluster.local:8080/mcp`
     - Asset API service: `http://hunsy-asset-platform-api.hunsy-asset-platform.svc.cluster.local`
     - Public asset API hostname: `asset.seung.site`
+    - Fixed expense tools: `get_recurring_expenses`, `get_recurring_expense_summary`, `create_recurring_expense`, `update_recurring_expense`, `delete_recurring_expense`.
+    - Fixed expense source tab: Google Sheet `💸 고정지출`; writes are bookkeeping-only, not financial transactions.
+
+    ## Fixed expense tool payload guide
+    - `name`: 지출명. 예: `유튜브 프리미엄`.
+    - `category`: 구독/통신/보험/주거/교육/기타 같은 큰 분류.
+    - `amount`: 결제 주기별 원금. KRW라도 숫자 문자열 또는 숫자로 보낸다.
+    - `period`: `monthly`, `yearly`, `weekly`, `daily`, `custom` 중 하나. 일반 월 구독은 `monthly`.
+    - `monthly_amount`: 월환산 override가 필요할 때만 넣는다. `custom` 주기면 가능하면 사용자에게 월환산 금액을 확인한다.
+    - `payment_day`: 매월 결제일 또는 사람이 이해할 수 있는 결제일 메모.
+    - `enabled`: 활성 고정지출이면 `true`, 해지/중지 항목이면 `false`.
+    - update/delete는 조회 결과의 기존 row를 `match`로 보존해서 호출한다.
 
     ## Handoff to Gebari
     - Developer Agent `개바리` primary channel: `플랫폼개발` / `1554506829348741150`.
