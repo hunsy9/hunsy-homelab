@@ -38,26 +38,80 @@
           - kubeconfig_stat.stat.exists
         fail_msg: "{{ kubeconfig_path }} is required to update kube-proxy ConfigMap."
 
+    - name: Create static pod manifest backup directory outside kubelet staticPodPath
+      ansible.builtin.file:
+        path: /root/kubernetes-manifest-backups
+        state: directory
+        owner: root
+        group: root
+        mode: '0700'
+      when: not ansible_check_mode
+
+    - name: Back up kube-controller-manager manifest outside staticPodPath
+      ansible.builtin.copy:
+        src: "{{ kube_static_manifest_dir }}/kube-controller-manager.yaml"
+        dest: /root/kubernetes-manifest-backups/kube-controller-manager.yaml.pre-metrics-bind
+        remote_src: true
+        owner: root
+        group: root
+        mode: '0600'
+        force: false
+      when: not ansible_check_mode
+
     - name: Bind kube-controller-manager metrics to all interfaces
       ansible.builtin.replace:
         path: "{{ kube_static_manifest_dir }}/kube-controller-manager.yaml"
         regexp: '--bind-address=127\.0\.0\.1'
         replace: "--bind-address={{ controller_manager_metrics_bind_address }}"
-        backup: true
+        backup: false
+
+    - name: Back up kube-scheduler manifest outside staticPodPath
+      ansible.builtin.copy:
+        src: "{{ kube_static_manifest_dir }}/kube-scheduler.yaml"
+        dest: /root/kubernetes-manifest-backups/kube-scheduler.yaml.pre-metrics-bind
+        remote_src: true
+        owner: root
+        group: root
+        mode: '0600'
+        force: false
+      when: not ansible_check_mode
 
     - name: Bind kube-scheduler metrics to all interfaces
       ansible.builtin.replace:
         path: "{{ kube_static_manifest_dir }}/kube-scheduler.yaml"
         regexp: '--bind-address=127\.0\.0\.1'
         replace: "--bind-address={{ scheduler_metrics_bind_address }}"
-        backup: true
+        backup: false
+
+    - name: Back up etcd manifest outside staticPodPath
+      ansible.builtin.copy:
+        src: "{{ kube_static_manifest_dir }}/etcd.yaml"
+        dest: /root/kubernetes-manifest-backups/etcd.yaml.pre-metrics-bind
+        remote_src: true
+        owner: root
+        group: root
+        mode: '0600'
+        force: false
+      when: not ansible_check_mode
 
     - name: Bind etcd metrics to all interfaces
       ansible.builtin.replace:
         path: "{{ kube_static_manifest_dir }}/etcd.yaml"
         regexp: '--listen-metrics-urls=http://127\.0\.0\.1:2381'
         replace: "--listen-metrics-urls={{ etcd_metrics_url }}"
-        backup: true
+        backup: false
+
+    - name: Move Ansible backup manifests out of kubelet staticPodPath
+      ansible.builtin.shell: >-
+        set -euo pipefail;
+        shopt -s nullglob;
+        mkdir -p /root/kubernetes-manifest-backups/ansible-inline-backups;
+        mv {{ kube_static_manifest_dir }}/*.yaml.*~ /root/kubernetes-manifest-backups/ansible-inline-backups/
+      args:
+        executable: /bin/bash
+      register: moved_static_pod_backups
+      changed_when: moved_static_pod_backups.rc == 0
+      when: not ansible_check_mode
 
     - name: Read kube-proxy ConfigMap
       ansible.builtin.command: >-
