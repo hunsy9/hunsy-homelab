@@ -1,0 +1,126 @@
+---
+- name: Configure Kubernetes component metrics bind addresses
+  hosts: control_plane
+  gather_facts: false
+
+  vars:
+    kubeconfig_path: /etc/kubernetes/admin.conf
+    kube_static_manifest_dir: /etc/kubernetes/manifests
+    kube_proxy_configmap_tmp: /tmp/kube-proxy-configmap-metrics.yaml
+    kube_proxy_metrics_bind_address: 0.0.0.0:10249
+    controller_manager_metrics_bind_address: 0.0.0.0
+    scheduler_metrics_bind_address: 0.0.0.0
+    etcd_metrics_url: http://0.0.0.0:2381
+
+  handlers:
+    - name: Restart kube-proxy daemonset
+      ansible.builtin.command: >-
+        kubectl --kubeconfig {{ kubeconfig_path }}
+        -n kube-system rollout restart daemonset/kube-proxy
+      when: not ansible_check_mode
+
+    - name: Wait for kube-proxy rollout
+      ansible.builtin.command: >-
+        kubectl --kubeconfig {{ kubeconfig_path }}
+        -n kube-system rollout status daemonset/kube-proxy --timeout=180s
+      changed_when: false
+      when: not ansible_check_mode
+
+  tasks:
+    - name: Ensure kubeadm admin kubeconfig exists
+      ansible.builtin.stat:
+        path: "{{ kubeconfig_path }}"
+      register: kubeconfig_stat
+
+    - name: Stop if kubeconfig is missing
+      ansible.builtin.assert:
+        that:
+          - kubeconfig_stat.stat.exists
+        fail_msg: "{{ kubeconfig_path }} is required to update kube-proxy ConfigMap."
+
+    - name: Bind kube-controller-manager metrics to all interfaces
+      ansible.builtin.replace:
+        path: "{{ kube_static_manifest_dir }}/kube-controller-manager.yaml"
+        regexp: '--bind-address=127\.0\.0\.1'
+        replace: "--bind-address={{ controller_manager_metrics_bind_address }}"
+        backup: true
+
+    - name: Bind kube-scheduler metrics to all interfaces
+      ansible.builtin.replace:
+        path: "{{ kube_static_manifest_dir }}/kube-scheduler.yaml"
+        regexp: '--bind-address=127\.0\.0\.1'
+        replace: "--bind-address={{ scheduler_metrics_bind_address }}"
+        backup: true
+
+    - name: Bind etcd metrics to all interfaces
+      ansible.builtin.replace:
+        path: "{{ kube_static_manifest_dir }}/etcd.yaml"
+        regexp: '--listen-metrics-urls=http://127\.0\.0\.1:2381'
+        replace: "--listen-metrics-urls={{ etcd_metrics_url }}"
+        backup: true
+
+    - name: Read kube-proxy ConfigMap
+      ansible.builtin.command: >-
+        kubectl --kubeconfig {{ kubeconfig_path }}
+        -n kube-system get configmap kube-proxy -o yaml
+      register: kube_proxy_configmap
+      changed_when: false
+      check_mode: false
+
+    - name: Build desired kube-proxy ConfigMap with metrics bind address
+      ansible.builtin.set_fact:
+        kube_proxy_configmap_desired: >-
+          {{ kube_proxy_configmap.stdout
+          | regex_replace('(?m)^  creationTimestamp: .*\n', '')
+          | regex_replace('(?m)^  resourceVersion: .*\n', '')
+          | regex_replace('(?m)^  uid: .*$', '')
+          | regex_replace('metricsBindAddress: ""', 'metricsBindAddress: ' ~ kube_proxy_metrics_bind_address)
+          | regex_replace('metricsBindAddress: "127\\.0\\.0\\.1:10249"', 'metricsBindAddress: ' ~ kube_proxy_metrics_bind_address)
+          | regex_replace('metricsBindAddress: 127\\.0\\.0\\.1:10249', 'metricsBindAddress: ' ~ kube_proxy_metrics_bind_address) }}
+
+    - name: Write desired kube-proxy ConfigMap manifest
+      ansible.builtin.copy:
+        dest: "{{ kube_proxy_configmap_tmp }}"
+        owner: root
+        group: root
+        mode: '0600'
+        content: "{{ kube_proxy_configmap_desired }}\n"
+      when: kube_proxy_configmap_desired != kube_proxy_configmap.stdout
+      notify:
+        - Restart kube-proxy daemonset
+        - Wait for kube-proxy rollout
+
+    - name: Apply desired kube-proxy ConfigMap manifest
+      ansible.builtin.command: >-
+        kubectl --kubeconfig {{ kubeconfig_path }} apply -f {{ kube_proxy_configmap_tmp }}
+      when:
+        - not ansible_check_mode
+        - kube_proxy_configmap_desired != kube_proxy_configmap.stdout
+
+    - name: Show configured control-plane metrics manifest lines
+      ansible.builtin.command: >-
+        grep -R -E 'bind-address|listen-metrics-urls'
+        {{ kube_static_manifest_dir }}/kube-controller-manager.yaml
+        {{ kube_static_manifest_dir }}/kube-scheduler.yaml
+        {{ kube_static_manifest_dir }}/etcd.yaml
+      register: metrics_manifest_lines
+      changed_when: false
+      check_mode: false
+
+    - name: Show kube-proxy metrics bind setting
+      ansible.builtin.command: >-
+        kubectl --kubeconfig {{ kubeconfig_path }}
+        -n kube-system get configmap kube-proxy
+        -o jsonpath='{.data.config\.conf}'
+      register: kube_proxy_config
+      changed_when: false
+      check_mode: false
+
+    - name: Display metrics bind configuration
+      ansible.builtin.debug:
+        msg:
+          static_pod_manifests: "{{ metrics_manifest_lines.stdout_lines }}"
+          kube_proxy_metrics_line: >-
+            {{ kube_proxy_config.stdout.split('\n')
+            | select('search', 'metricsBindAddress')
+            | list }}

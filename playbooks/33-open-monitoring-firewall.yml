@@ -5,8 +5,13 @@
 
   vars:
     firewalld_zone: public
-    monitoring_firewall_ports:
+    monitoring_common_firewall_ports:
       - 9100/tcp # prometheus-node-exporter scrape endpoint
+      - 10249/tcp # kube-proxy metrics
+    monitoring_control_plane_firewall_ports:
+      - 10257/tcp # kube-controller-manager metrics
+      - 10259/tcp # kube-scheduler metrics
+      - 2381/tcp # etcd metrics
 
   tasks:
     - name: Ensure firewalld is running
@@ -22,7 +27,17 @@
         permanent: true
         immediate: true
         state: enabled
-      loop: "{{ monitoring_firewall_ports }}"
+      loop: "{{ monitoring_common_firewall_ports }}"
+
+    - name: Open control-plane monitoring TCP ports
+      ansible.posix.firewalld:
+        zone: "{{ firewalld_zone }}"
+        port: "{{ item }}"
+        permanent: true
+        immediate: true
+        state: enabled
+      loop: "{{ monitoring_control_plane_firewall_ports }}"
+      when: inventory_hostname in groups['control_plane']
 
     - name: Show active firewalld zone rules
       ansible.builtin.command: firewall-cmd --zone={{ firewalld_zone }} --list-all
