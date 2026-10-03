@@ -1,5 +1,0 @@
-apiVersion: v2
-name: cleanup-tombstone
-description: Temporary empty chart used to let Argo CD prune tracked resources
-version: 0.1.0
-type: application
