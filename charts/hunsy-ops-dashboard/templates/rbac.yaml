@@ -21,7 +21,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name | quote }}
 rules:
   - apiGroups: [""]
-    resources: ["nodes"]
+    resources: ["nodes", "pods", "events"]
     verbs: ["get", "list"]
   - apiGroups: ["metrics.k8s.io"]
     resources: ["nodes"]
