@@ -97,6 +97,16 @@ httpRoutes:
             name: hunsy-asset-platform-api
             port: 80
             weight: 1
+      - matches:
+          - path:
+              type: PathPrefix
+              value: /asset
+        backendRefs:
+          - group: ""
+            kind: Service
+            name: hunsy-asset-platform-api
+            port: 80
+            weight: 1
   - enabled: true
     name: hunsy-asset-dashboard-app-path
     parentRefs:
