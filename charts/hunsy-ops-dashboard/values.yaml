@@ -27,7 +27,7 @@ service:
   targetPort: 8080
 
 httpRoute:
-  enabled: true
+  enabled: false
   name: hunsy-ops-dashboard
   parentRefs:
     - group: gateway.networking.k8s.io
@@ -36,7 +36,7 @@ httpRoute:
       namespace: gateway-system
       sectionName: http
   hostnames:
-    - ops.seung.site
+    - app.seung.site
   rules:
     - matches:
         - path:

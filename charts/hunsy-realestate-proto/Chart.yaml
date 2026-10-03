@@ -1,6 +1,0 @@
-apiVersion: v2
-name: hunsy-realestate-proto
-description: Seoul/Gyeonggi real estate map prototype PWA with Gateway API HTTPRoute
-type: application
-version: 0.1.0
-appVersion: "0.1.0"

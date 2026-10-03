@@ -22,7 +22,7 @@ This repo is the infrastructure/GitOps entry point. Developer agents should use 
 | `hunsy-hermes-jasani` | `hunsy-hermes-runtime` image | `sites/az/hunsy-hermes-jasani` + `charts/hunsy-hermes-runtime` | `hunsy-hermes-jasani` | Asset assistant / 자사니. Asset MCP + handoff MCP, no Kubernetes/GitHub powers. |
 | `hunsy-hermes-sre` | `hunsy-hermes-runtime` image | `sites/az/hunsy-hermes-sre` + `charts/hunsy-hermes-runtime` | `hunsy-hermes-sre` | SRE / 스리. Kubernetes/SRE diagnostics bot with pod exec diagnostics and approval-gated operations. |
 | `hunsy-hermes-runtime` | `hunsy-hermes-runtime` image | `sites/az/hunsy-hermes-runtime` + `charts/hunsy-hermes-runtime` | `hunsy-hermes-runtime` | Baseline/internal Hermes runtime connected to asset MCP. |
-| `hunsy-ops-dashboard` | `hunsy-ops-dashboard` image | `sites/az/hunsy-ops-dashboard` + `charts/hunsy-ops-dashboard` | `hunsy-hermes-runtime` | Lightweight ops dashboard exposed at `ops.seung.site`. |
+| `hunsy-ops-dashboard` | `hunsy-ops-dashboard` image | `sites/az/hunsy-ops-dashboard` + `charts/hunsy-ops-dashboard` | `hunsy-hermes-runtime` | Legacy ops service retained as an `hunsy-ops-api` extraction candidate; public UI is `app.seung.site/ops`. |
 
 ## Non-`hunsy-*` supporting apps
 

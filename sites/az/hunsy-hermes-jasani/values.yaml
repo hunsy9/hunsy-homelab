@@ -162,7 +162,7 @@ context:
     ## MCP
     - Asset MCP URL: `http://hunsy-assets-mcp.hunsy-assets-mcp.svc.cluster.local:8080/mcp`
     - Asset API service: `http://hunsy-asset-platform-api.hunsy-asset-platform.svc.cluster.local`
-    - Public asset API hostname: `asset.seung.site`
+    - Public asset UI route: `https://app.seung.site/asset`
     - Fixed expense tools: `get_recurring_expenses`, `get_recurring_expense_summary`, `create_recurring_expense`, `update_recurring_expense`, `delete_recurring_expense`.
     - Fixed expense source tab: Google Sheet `💸 고정지출`; writes are bookkeeping-only, not financial transactions.
 

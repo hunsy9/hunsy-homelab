@@ -177,7 +177,8 @@ context:
 
     ## Hostnames and routing
     - Public app ingress path: Cloudflare Tunnel -> Envoy Gateway Service -> Gateway API HTTPRoute -> Service.
-    - Asset API hostname: `asset.seung.site`.
+    - Public asset UI route: `https://app.seung.site/asset`.
+    - Asset API service stays internal at `hunsy-asset-platform-api.hunsy-asset-platform.svc.cluster.local`.
     - Argo CD UI: `argocd.seung.site`.
     - Grafana UI: `grafana.seung.site`.
     - Hermes runtimes stay ClusterIP only; do not add HTTPRoute unless explicitly approved.

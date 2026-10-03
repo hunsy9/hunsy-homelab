@@ -192,8 +192,8 @@ context:
 
     ## Probe targets planned
     - `https://app.seung.site/`
-    - `https://asset.seung.site/`
-    - `https://ops.seung.site/`
+    - `https://app.seung.site/asset`
+    - `https://app.seung.site/ops`
     - key internal Services and Gateway paths.
 
 hermesConfig:
