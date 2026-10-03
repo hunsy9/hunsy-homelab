@@ -4,7 +4,7 @@ namespace:
 
 image:
   repository: ghcr.io/hunsy9/hunsy-asset-platform/assets-mcp
-  tag: sha-0673549
+  tag: sha-c9204e6
   pullPolicy: IfNotPresent
 
 imagePullSecrets:
