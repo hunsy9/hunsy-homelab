@@ -33,6 +33,9 @@ spec:
             - name: http
               containerPort: {{ .Values.service.targetPort }}
               protocol: TCP
+          env:
+            - name: ALERTMANAGER_BASE_URL
+              value: {{ .Values.alertmanager.baseUrl | quote }}
           readinessProbe:
             httpGet:
               path: /readyz

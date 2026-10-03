@@ -4,7 +4,7 @@ namespace:
 
 image:
   repository: ghcr.io/hunsy9/hunsy-ops-dashboard
-  tag: web-sha-3c7423d
+  tag: web-sha-400781c
   pullPolicy: IfNotPresent
 
 imagePullSecrets:
@@ -17,6 +17,9 @@ serviceAccount:
 
 nodeMetrics:
   enabled: true
+
+alertmanager:
+  baseUrl: http://kube-prometheus-stack-alertmanager.monitoring.svc:9093
 
 nodeSelector:
   kubernetes.io/hostname: k8s-worker-01
