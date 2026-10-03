@@ -32,6 +32,7 @@ These are the home-lab-owned `hunsy-*` Argo CD applications currently represente
 | `hunsy-bot-handoff-mcp` | Narrow MCP server for bot-to-bot handoff. Creates approved template-based Discord handoff threads/messages in `#봇-문의채널`. | `hunsy-hermes-jasani` | `ghcr.io/hunsy9/hunsy-asset-platform/bot-handoff-mcp` | `charts/hunsy-bot-handoff-mcp` + `sites/az/hunsy-bot-handoff-mcp` | Consumed by 자사니 at `http://hunsy-bot-handoff-mcp.hunsy-hermes-jasani.svc.cluster.local:8080/mcp` |
 | `hunsy-hermes-developer-runtime` | Developer Agent / 개바리. Native Hermes Discord gateway for platform development, GitOps checks, scoped Kubernetes/Argo read/patch, GitHub work. | `hunsy-hermes-developer-runtime` | `ghcr.io/hunsy9/hunsy-hermes-runtime` | `charts/hunsy-hermes-runtime` + `sites/az/hunsy-hermes-developer-runtime` | Discord `#플랫폼개발` and `#봇-문의채널`; ClusterIP API server on `8642` |
 | `hunsy-hermes-jasani` | Asset assistant / 자사니. Native Hermes Discord gateway for casual asset consultation with asset MCP and approved handoff to 개바리. | `hunsy-hermes-jasani` | `ghcr.io/hunsy9/hunsy-hermes-runtime` | `charts/hunsy-hermes-runtime` + `sites/az/hunsy-hermes-jasani` | Discord `#자산관리`; consumes `asset` and `handoff` MCP servers; ClusterIP API server on `8642` |
+| `hunsy-hermes-sre` | SRE / 스리. Native Hermes Discord gateway for Kubernetes/SRE triage, pod exec diagnostics, synthetic-probe/reporting roadmap, and approval-gated operations. | `hunsy-hermes-sre` | `ghcr.io/hunsy9/hunsy-hermes-runtime` | `charts/hunsy-hermes-runtime` + `sites/az/hunsy-hermes-sre` | Discord `#플랫폼개발` and alert channel `1553775827307601990`; ClusterIP API server on `8642` |
 | `hunsy-hermes-runtime` | Baseline/internal Hermes runtime instance connected to asset MCP. Kept ClusterIP-only. | `hunsy-hermes-runtime` | `ghcr.io/hunsy9/hunsy-hermes-runtime` | `charts/hunsy-hermes-runtime` + `sites/az/hunsy-hermes-runtime` | Internal ClusterIP API server on `8642` |
 | `hunsy-ops-dashboard` | Lightweight ops dashboard web UI. | `hunsy-hermes-runtime` | `ghcr.io/hunsy9/hunsy-ops-dashboard` | `charts/hunsy-ops-dashboard` + `sites/az/hunsy-ops-dashboard` | `ops.seung.site` via Gateway API / Cloudflare Tunnel |
 
@@ -84,4 +85,5 @@ ansible-playbook playbooks/10-prepare-rocky.yml
 - Hermes runtimes are ClusterIP-only unless explicitly exposed through protected routes.
 - 자사니 has no Kubernetes/GitHub/Secret powers; it talks to asset/handoff MCP only.
 - 개바리 has scoped developer/runtime access, not node/root/Secret access.
+- 스리는 SRE/runtime access for diagnostics and approval-gated operations; Secret value access remains forbidden.
 - Secrets should not be committed in plaintext.

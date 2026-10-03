@@ -39,9 +39,11 @@ serviceAccount:
 
 rbac:
   enabled: false
+  extraClusterRules: []
   argocdApplications:
     enabled: false
     namespace: argocd
+    verbs: ["get", "list", "watch", "patch"]
 
 gitSsh:
   enabled: false

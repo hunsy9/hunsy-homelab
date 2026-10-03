@@ -20,6 +20,7 @@ This repo is the infrastructure/GitOps entry point. Developer agents should use 
 | `hunsy-bot-handoff-mcp` | `hunsy-asset-platform/apps/bot-handoff-mcp` / `ghcr.io/hunsy9/hunsy-asset-platform/bot-handoff-mcp` | `sites/az/hunsy-bot-handoff-mcp` + `charts/hunsy-bot-handoff-mcp` | `hunsy-hermes-jasani` | Approved template-based Discord handoff MCP from 자사니 to 개바리. |
 | `hunsy-hermes-developer-runtime` | `hunsy-hermes-runtime` image | `sites/az/hunsy-hermes-developer-runtime` + `charts/hunsy-hermes-runtime` | `hunsy-hermes-developer-runtime` | Developer Agent / 개바리. GitOps/app developer bot with scoped Kubernetes/Argo/GitHub access. |
 | `hunsy-hermes-jasani` | `hunsy-hermes-runtime` image | `sites/az/hunsy-hermes-jasani` + `charts/hunsy-hermes-runtime` | `hunsy-hermes-jasani` | Asset assistant / 자사니. Asset MCP + handoff MCP, no Kubernetes/GitHub powers. |
+| `hunsy-hermes-sre` | `hunsy-hermes-runtime` image | `sites/az/hunsy-hermes-sre` + `charts/hunsy-hermes-runtime` | `hunsy-hermes-sre` | SRE / 스리. Kubernetes/SRE diagnostics bot with pod exec diagnostics and approval-gated operations. |
 | `hunsy-hermes-runtime` | `hunsy-hermes-runtime` image | `sites/az/hunsy-hermes-runtime` + `charts/hunsy-hermes-runtime` | `hunsy-hermes-runtime` | Baseline/internal Hermes runtime connected to asset MCP. |
 | `hunsy-ops-dashboard` | `hunsy-ops-dashboard` image | `sites/az/hunsy-ops-dashboard` + `charts/hunsy-ops-dashboard` | `hunsy-hermes-runtime` | Lightweight ops dashboard exposed at `ops.seung.site`. |
 
@@ -40,4 +41,5 @@ This repo is the infrastructure/GitOps entry point. Developer agents should use 
 - Secret/token values are never stored in this map.
 - GitHub write access from the in-cluster Developer Agent is intentionally scoped through mounted credentials and Secrets; never print credential file contents.
 - 자사니 is intentionally read-only for infrastructure: asset/handoff MCP only, no Kubernetes/GitHub/Secret access.
+- 스리는 intentionally has broader SRE diagnostics RBAC, including pod exec, but Secret value output and infrastructure changes remain approval-gated by prompt policy.
 - For app source changes outside `hunsy-homelab`, confirm the approved credential/permission path before attempting to push.
