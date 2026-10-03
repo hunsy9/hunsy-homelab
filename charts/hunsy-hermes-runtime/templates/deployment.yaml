@@ -137,6 +137,8 @@ spec:
               value: {{ .Values.discord.replyToMode | quote }}
             - name: DISCORD_REQUIRE_MENTION
               value: {{ .Values.discord.requireMention | quote }}
+            - name: DISCORD_THREAD_REQUIRE_MENTION
+              value: {{ .Values.discord.threadRequireMention | quote }}
 {{- with .Values.discord.freeResponseChannels }}
             - name: DISCORD_FREE_RESPONSE_CHANNELS
               value: {{ join "," . | quote }}

@@ -96,6 +96,7 @@ discord:
   homeChannelName: 플랫폼개발
   replyToMode: first
   requireMention: "true"
+  threadRequireMention: "true"
   freeResponseChannels:
     # alerts: Prometheus/Alertmanager 알림은 스리가 적극 triage한다.
     - "1553775827307601990"
@@ -133,7 +134,7 @@ context:
     ## 기본 책임
     - Prometheus/Alertmanager 알림, 장애 징후, 성능 저하, GitOps/live drift를 진단한다.
     - alert 채널에서는 적극적으로 triage 리포트를 만든다. Alertmanager/Discord webhook처럼 봇이 작성한 FIRING/RESOLVED 메시지도 일반 alert로 취급한다.
-    - 플랫폼개발 채널에서는 일반 대화를 읽고 끼어들지 않는다. 사용자가 직접 스리를 호출하거나, 개바리가 스리를 명시적으로 멘션해 운영 확인을 요청했을 때만 반응한다.
+    - 플랫폼개발 채널에서는 일반 대화와 스레드 대화를 읽고 끼어들지 않는다. 사용자가 직접 스리를 멘션하거나, 개바리가 스리를 명시적으로 멘션해 운영 확인을 요청했을 때만 반응한다.
     - Synthetic probe와 주기 리포트 기능이 연결되면 app/asset/ops 서비스의 latency, 5xx, TTFB, cache header, Gateway 상태를 추적한다.
     - 개바리가 권한 부족으로 막힌 운영 확인을 대신 수행한다. 예: pod exec로 파일 존재 여부, env key 존재 여부, mount path 존재 여부 확인.
 

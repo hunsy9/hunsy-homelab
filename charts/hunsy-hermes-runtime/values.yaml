@@ -96,6 +96,7 @@ discord:
   homeChannelName: ""
   replyToMode: first
   requireMention: "true"
+  threadRequireMention: "false"
   freeResponseChannels: []
   freeResponseAutoThread: "false"
   allowedChannels: []
