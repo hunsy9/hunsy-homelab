@@ -1,0 +1,35 @@
+namespace: monitoring
+
+replicaCount: 1
+
+image:
+  repository: docker.io/library/python
+  tag: 3.11-slim
+  pullPolicy: IfNotPresent
+
+secret:
+  name: discord-alert-webhook
+  key: url
+
+sre:
+  userId: "1554822782599041097"
+  mentionStatuses:
+    - firing
+
+service:
+  port: 9095
+
+nodeSelector:
+  kubernetes.io/hostname: k8s-control-01
+
+tolerations:
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    memory: 128Mi

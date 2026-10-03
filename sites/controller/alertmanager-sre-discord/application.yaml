@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: alertmanager-sre-discord
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: https://github.com/hunsy9/hunsy-homelab.git
+      targetRevision: main
+      path: charts/alertmanager-sre-discord
+      helm:
+        releaseName: alertmanager-sre-discord
+        valueFiles:
+          - $values/sites/controller/alertmanager-sre-discord/values.yaml
+    - repoURL: https://github.com/hunsy9/hunsy-homelab.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true

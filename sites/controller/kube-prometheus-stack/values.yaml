@@ -85,7 +85,7 @@ alertmanager:
       - name: "null"
       - name: discord
         webhook_configs:
-          - url: http://alertmanager-discord.monitoring.svc.cluster.local:9094
+          - url: http://alertmanager-sre-discord.monitoring.svc.cluster.local:9095
             send_resolved: true
     templates:
       - /etc/alertmanager/config/*.tmpl

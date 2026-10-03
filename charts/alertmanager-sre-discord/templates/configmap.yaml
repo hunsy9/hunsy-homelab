@@ -1,0 +1,119 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-sre-discord
+  namespace: {{ .Values.namespace | quote }}
+  labels:
+    app.kubernetes.io/name: alertmanager-sre-discord
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+data:
+  app.py: |
+    import json
+    import os
+    import sys
+    import urllib.error
+    import urllib.request
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    DISCORD_WEBHOOK = os.environ["DISCORD_WEBHOOK"]
+    SRE_USER_ID = os.environ["SRE_USER_ID"]
+    MENTION_STATUSES = {s.strip().lower() for s in os.environ.get("MENTION_STATUSES", "firing").split(",") if s.strip()}
+    PORT = int(os.environ.get("PORT", "9095"))
+
+    def _truncate(value: str, limit: int) -> str:
+        if len(value) <= limit:
+            return value
+        return value[: limit - 1] + "…"
+
+    def _alert_line(alert: dict) -> str:
+        labels = alert.get("labels") or {}
+        annotations = alert.get("annotations") or {}
+        name = labels.get("alertname") or "unknown"
+        severity = labels.get("severity") or "unknown"
+        namespace = labels.get("namespace") or labels.get("kubernetes_namespace") or "-"
+        pod = labels.get("pod") or labels.get("pod_name") or ""
+        summary = annotations.get("summary") or annotations.get("description") or ""
+        target = namespace if not pod else f"{namespace}/{pod}"
+        return f"- **{name}** `{severity}` target=`{target}` {summary}".strip()
+
+    def _build_discord_payload(payload: dict) -> dict:
+        status = str(payload.get("status") or "unknown").lower()
+        alerts = payload.get("alerts") or []
+        group_labels = payload.get("groupLabels") or {}
+        common_labels = payload.get("commonLabels") or {}
+        alertname = group_labels.get("alertname") or common_labels.get("alertname") or "Alertmanager"
+        severity = common_labels.get("severity") or "unknown"
+        mention = f"<@{SRE_USER_ID}>" if status in MENTION_STATUSES else ""
+        title = f"🚨 {status.upper()}: {alertname}"
+        if severity != "unknown":
+            title += f" [{severity}]"
+        lines = []
+        if mention:
+            lines.append(mention)
+        lines.append(title)
+        lines.append("")
+        if alerts:
+            for alert in alerts[:8]:
+                lines.append(_alert_line(alert))
+            if len(alerts) > 8:
+                lines.append(f"- ... {len(alerts) - 8} more alert(s)")
+        else:
+            lines.append("- Alertmanager payload had no alerts[] entries.")
+        external_url = payload.get("externalURL")
+        if external_url:
+            lines.append("")
+            lines.append(f"Alertmanager: {external_url}")
+        content = _truncate("\n".join(lines), 1900)
+        return {
+            "content": content,
+            "allowed_mentions": {"parse": [], "users": [SRE_USER_ID] if mention else []},
+        }
+
+    def _post_discord(body: dict) -> None:
+        data = json.dumps(body).encode("utf-8")
+        req = urllib.request.Request(
+            DISCORD_WEBHOOK,
+            data=data,
+            headers={"Content-Type": "application/json", "User-Agent": "hunsy-alertmanager-sre-discord"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            if resp.status >= 300:
+                raise RuntimeError(f"discord status={resp.status}")
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            if self.path in ("/healthz", "/readyz"):
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b"ok\n")
+                return
+            self.send_response(404)
+            self.end_headers()
+
+        def do_POST(self):
+            try:
+                length = int(self.headers.get("Content-Length") or "0")
+                raw = self.rfile.read(length)
+                payload = json.loads(raw.decode("utf-8")) if raw else {}
+                discord_payload = _build_discord_payload(payload)
+                _post_discord(discord_payload)
+                status = str(payload.get("status") or "unknown").lower()
+                count = len(payload.get("alerts") or [])
+                print(json.dumps({"status": status, "alerts": count, "mentioned": status in MENTION_STATUSES}), flush=True)
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b"ok\n")
+            except Exception as exc:
+                print(f"error: {type(exc).__name__}: {exc}", file=sys.stderr, flush=True)
+                self.send_response(500)
+                self.end_headers()
+                self.wfile.write(b"error\n")
+
+        def log_message(self, fmt, *args):
+            print(f"{self.address_string()} - {fmt % args}", flush=True)
+
+    if __name__ == "__main__":
+        server = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
+        print(f"alertmanager-sre-discord listening on :{PORT}", flush=True)
+        server.serve_forever()

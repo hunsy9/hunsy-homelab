@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager-sre-discord
+  namespace: "{{ .Values.namespace }}"
+  labels:
+    app.kubernetes.io/name: alertmanager-sre-discord
+    app.kubernetes.io/instance: "{{ .Release.Name }}"
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: alertmanager-sre-discord
+      app.kubernetes.io/instance: "{{ .Release.Name }}"
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: alertmanager-sre-discord
+        app.kubernetes.io/instance: "{{ .Release.Name }}"
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: k8s-control-01
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: alertmanager-sre-discord
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: "{{ .Values.image.pullPolicy }}"
+          command: ["python", "/app/app.py"]
+          env:
+            - name: DISCORD_WEBHOOK
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.secret.name }}"
+                  key: "{{ .Values.secret.key }}"
+            - name: SRE_USER_ID
+              value: "{{ .Values.sre.userId }}"
+            - name: MENTION_STATUSES
+              value: '{{ join "," .Values.sre.mentionStatuses }}'
+            - name: PORT
+              value: "{{ .Values.service.port }}"
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+          volumeMounts:
+            - name: app
+              mountPath: /app/app.py
+              subPath: app.py
+              readOnly: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+      volumes:
+        - name: app
+          configMap:
+            name: alertmanager-sre-discord
