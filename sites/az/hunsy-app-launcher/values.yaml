@@ -4,7 +4,7 @@ namespace:
 
 image:
   repository: ghcr.io/hunsy9/hunsy-app-launcher
-  tag: web-sha-af9e122
+  tag: web-sha-07f84b3
   pullPolicy: IfNotPresent
 
 imagePullSecrets:
@@ -38,6 +38,16 @@ httpRoute:
   hostnames:
     - app.seung.site
   rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/asset
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: hunsy-app-launcher
+          port: 80
+          weight: 1
     - matches:
         - path:
             type: PathPrefix
