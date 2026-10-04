@@ -21,10 +21,10 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name | quote }}
 rules:
   - apiGroups: [""]
-    resources: ["nodes", "pods", "events"]
+    resources: ["nodes", "pods", "events", "persistentvolumeclaims"]
     verbs: ["get", "list"]
   - apiGroups: ["metrics.k8s.io"]
-    resources: ["nodes"]
+    resources: ["nodes", "pods"]
     verbs: ["get", "list"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
