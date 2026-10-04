@@ -36,6 +36,8 @@ spec:
           env:
             - name: ALERTMANAGER_BASE_URL
               value: {{ .Values.alertmanager.baseUrl | quote }}
+            - name: PROMETHEUS_BASE_URL
+              value: {{ .Values.prometheus.baseUrl | quote }}
           readinessProbe:
             httpGet:
               path: /readyz

@@ -21,6 +21,9 @@ nodeMetrics:
 alertmanager:
   baseUrl: http://kube-prometheus-stack-alertmanager.monitoring.svc:9093
 
+prometheus:
+  baseUrl: http://kube-prometheus-stack-prometheus.monitoring.svc:9090
+
 nodeSelector:
   kubernetes.io/hostname: k8s-worker-01
 
