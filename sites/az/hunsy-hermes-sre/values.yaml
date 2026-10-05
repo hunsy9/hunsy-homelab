@@ -41,6 +41,9 @@ rbac:
     - apiGroups: ["networking.k8s.io"]
       resources: ["ingresses", "networkpolicies"]
       verbs: ["get", "list", "watch"]
+    - apiGroups: ["admissionregistration.k8s.io"]
+      resources: ["validatingwebhookconfigurations", "mutatingwebhookconfigurations"]
+      verbs: ["get", "list", "watch"]
     # Controlled exec: prompt policy allows only read-only diagnostics and forbids secret value output.
     - apiGroups: [""]
       resources: ["pods/exec"]
