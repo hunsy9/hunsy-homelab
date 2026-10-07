@@ -4,7 +4,7 @@ namespace:
 
 image:
   repository: ghcr.io/hunsy9/hunsy-asset-platform/api-server
-  tag: sha-4133d85
+  tag: sha-9e31644
   pullPolicy: IfNotPresent
 
 imagePullSecrets:
