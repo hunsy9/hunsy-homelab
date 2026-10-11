@@ -1,0 +1,27 @@
+{{- if .Values.dashboard.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ printf "%s-dashboard" (include "hunsy-hermes-runtime.name" .) | quote }}
+  namespace: {{ .Values.namespace.name | quote }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  labels:
+    app.kubernetes.io/name: {{ include "hunsy-hermes-runtime.name" . | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/component: dashboard
+spec:
+  type: ClusterIP
+{{- with .Values.dashboard.externalIPs }}
+  externalIPs:
+{{ toYaml . | indent 4 }}
+{{- end }}
+  selector:
+    app.kubernetes.io/name: {{ include "hunsy-hermes-runtime.name" . | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+  ports:
+    - name: dashboard
+      port: {{ .Values.dashboard.port }}
+      targetPort: dashboard
+      protocol: TCP
+{{- end }}

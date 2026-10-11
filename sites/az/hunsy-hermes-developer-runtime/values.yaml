@@ -27,6 +27,13 @@ service:
   type: ClusterIP
   port: 8642
 
+dashboard:
+  enabled: true
+  port: 9119
+  host: 0.0.0.0
+  externalIPs:
+    - 100.75.151.121
+
 resources:
   requests:
     cpu: 100m

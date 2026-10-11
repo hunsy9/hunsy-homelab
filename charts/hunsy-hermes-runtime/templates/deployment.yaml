@@ -216,6 +216,50 @@ spec:
 {{- end }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
+{{- if .Values.dashboard.enabled }}
+        - name: hermes-dashboard
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          command:
+            - hermes
+          args:
+            - dashboard
+            - --host
+            - {{ .Values.dashboard.host | quote }}
+            - --port
+            - {{ .Values.dashboard.port | quote }}
+            - --no-open
+            - --skip-build
+          ports:
+            - name: dashboard
+              containerPort: {{ .Values.dashboard.port }}
+              protocol: TCP
+          volumeMounts:
+{{- if .Values.persistence.enabled }}
+            - name: hermes-data
+              mountPath: /opt/data
+{{- end }}
+            - name: hermes-config
+              mountPath: /opt/data/config.yaml
+              subPath: config.yaml
+              readOnly: true
+            - name: hermes-auth-json
+              mountPath: /opt/data/auth.json
+              subPath: auth.json
+              readOnly: true
+{{- if .Values.context.enabled }}
+            - name: hermes-config
+              mountPath: /opt/data/SOUL.md
+              subPath: SOUL.md
+              readOnly: true
+            - name: hermes-config
+              mountPath: /workspace/.hermes.md
+              subPath: .hermes.md
+              readOnly: true
+{{- end }}
+          resources:
+{{ toYaml .Values.dashboard.resources | indent 12 }}
+{{- end }}
       volumes:
 {{- if .Values.persistence.enabled }}
         - name: hermes-data
