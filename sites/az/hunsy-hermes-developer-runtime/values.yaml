@@ -33,6 +33,14 @@ dashboard:
   host: 0.0.0.0
   externalIPs:
     - 100.75.151.121
+  basicAuth:
+    username: seunghoon
+    passwordSecret:
+      name: hermes-dashboard-basic-auth
+      key: password
+    sessionSecret:
+      name: hermes-api-server-key
+      key: key
 
 resources:
   requests:

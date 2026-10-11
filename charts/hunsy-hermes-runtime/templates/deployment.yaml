@@ -234,6 +234,19 @@ spec:
             - name: dashboard
               containerPort: {{ .Values.dashboard.port }}
               protocol: TCP
+          env:
+            - name: HERMES_DASHBOARD_BASIC_AUTH_USERNAME
+              value: {{ .Values.dashboard.basicAuth.username | quote }}
+            - name: HERMES_DASHBOARD_BASIC_AUTH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.dashboard.basicAuth.passwordSecret.name | quote }}
+                  key: {{ .Values.dashboard.basicAuth.passwordSecret.key | quote }}
+            - name: HERMES_DASHBOARD_BASIC_AUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.dashboard.basicAuth.sessionSecret.name | quote }}
+                  key: {{ .Values.dashboard.basicAuth.sessionSecret.key | quote }}
           volumeMounts:
 {{- if .Values.persistence.enabled }}
             - name: hermes-data

@@ -69,6 +69,14 @@ dashboard:
   port: 9119
   host: 0.0.0.0
   externalIPs: []
+  basicAuth:
+    username: admin
+    passwordSecret:
+      name: hermes-dashboard-basic-auth
+      key: password
+    sessionSecret:
+      name: hermes-api-server-key
+      key: key
   resources:
     requests:
       cpu: 50m
