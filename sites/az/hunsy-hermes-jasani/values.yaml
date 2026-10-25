@@ -193,7 +193,7 @@ context:
 hermesConfig:
   model:
     provider: openai-codex
-    default: gpt-5.5
+    default: gpt-6.1-sol
   toolsets:
     - hermes-api-server
     - discord
