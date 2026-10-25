@@ -56,6 +56,12 @@ serviceAccount:
 
 rbac:
   enabled: true
+  # Temporary recovery grant; disable after the missing dashboard Secret is created.
+  secretRecovery:
+    enabled: true
+    serviceAccount:
+      name: hunsy-hermes-sre
+      namespace: hunsy-hermes-sre
   argocdApplications:
     enabled: true
     namespace: argocd

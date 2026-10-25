@@ -40,6 +40,11 @@ serviceAccount:
 rbac:
   enabled: false
   extraClusterRules: []
+  secretRecovery:
+    enabled: false
+    serviceAccount:
+      name: ""
+      namespace: ""
   argocdApplications:
     enabled: false
     namespace: argocd
