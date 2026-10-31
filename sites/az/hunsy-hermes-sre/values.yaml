@@ -1,6 +1,6 @@
 namespace:
-  create: true
-  name: hunsy-hermes-sre
+  create: false
+  name: hunsy-bot
 
 fullnameOverride: hunsy-hermes-sre
 
@@ -44,24 +44,13 @@ rbac:
     - apiGroups: ["admissionregistration.k8s.io"]
       resources: ["validatingwebhookconfigurations", "mutatingwebhookconfigurations"]
       verbs: ["get", "list", "watch"]
-    # Controlled exec: prompt policy allows only read-only diagnostics and forbids secret value output.
-    - apiGroups: [""]
-      resources: ["pods/exec"]
-      verbs: ["create"]
-    # Approval-gated operational actions for later phases. Prompt requires explicit user approval first.
-    - apiGroups: [""]
-      resources: ["pods"]
-      verbs: ["delete"]
-    - apiGroups: ["apps"]
-      resources: ["deployments"]
-      verbs: ["patch"]
-    - apiGroups: ["batch"]
-      resources: ["jobs"]
-      verbs: ["create", "delete"]
+    # Shared namespace also hosts the developer bot; cluster-wide exec/mutation
+    # would let this ServiceAccount access that Pod's credentials. Keep read-only
+    # diagnostics until namespace-scoped, target-restricted operations are designed.
   argocdApplications:
     enabled: true
     namespace: argocd
-    verbs: ["get", "list", "watch", "patch"]
+    verbs: ["get", "list", "watch"]
 
 service:
   type: ClusterIP

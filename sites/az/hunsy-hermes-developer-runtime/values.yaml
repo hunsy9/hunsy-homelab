@@ -1,6 +1,6 @@
 namespace:
-  create: true
-  name: hunsy-hermes-developer-runtime
+  create: false
+  name: hunsy-bot
 
 fullnameOverride: hunsy-hermes-developer-runtime
 
@@ -28,7 +28,7 @@ service:
   port: 8642
 
 dashboard:
-  enabled: true
+  enabled: false
   port: 9119
   host: 0.0.0.0
   externalIPs:
@@ -56,12 +56,11 @@ serviceAccount:
 
 rbac:
   enabled: true
-  # Temporary recovery grant; disable after the missing dashboard Secret is created.
   secretRecovery:
-    enabled: true
+    enabled: false
     serviceAccount:
       name: hunsy-hermes-sre
-      namespace: hunsy-hermes-sre
+      namespace: hunsy-bot
   argocdApplications:
     enabled: true
     namespace: argocd

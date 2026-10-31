@@ -1,6 +1,6 @@
 namespace:
-  create: true
-  name: hunsy-hermes-jasani
+  create: false
+  name: hunsy-bot
 
 fullnameOverride: hunsy-hermes-jasani
 
@@ -180,7 +180,7 @@ context:
     - Developer Agent `개바리` primary channel: `플랫폼개발` / `1554506829348741150`.
     - Bot handoff channel: `봇-문의채널` / `1554832000777461840`.
     - 자사니가 자산/MCP/Sheet/API 이상 징후를 발견하면 사용자 승인 후 봇-문의채널에 올릴 점검 요청문을 만든다.
-    - Handoff MCP server: `http://hunsy-bot-handoff-mcp.hunsy-hermes-jasani.svc.cluster.local:8080/mcp`.
+    - Handoff MCP server: `http://hunsy-bot-handoff-mcp.hunsy-bot.svc.cluster.local:8080/mcp`.
     - Handoff template for asset/MCP/API/Sheet issues: `asset_mcp_bug_to_gebari`.
     - Handoff tool이 실패하거나 사용할 수 없으면 사용자가 복붙할 수 있는 점검 요청문을 제공한다.
     - 자사니는 점검 요청만 만든다. 수정/배포/로그 분석/Kubernetes/GitHub 조작은 개바리의 역할이다.
@@ -206,7 +206,7 @@ hermesConfig:
       timeout: 120
       connect_timeout: 60
     handoff:
-      url: http://hunsy-bot-handoff-mcp.hunsy-hermes-jasani.svc.cluster.local:8080/mcp
+      url: http://hunsy-bot-handoff-mcp.hunsy-bot.svc.cluster.local:8080/mcp
       timeout: 60
       connect_timeout: 30
   terminal:

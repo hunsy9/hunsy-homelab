@@ -18,11 +18,9 @@ spec:
       ref: values
   destination:
     server: https://kubernetes.default.svc
-    namespace: hunsy-hermes-developer-runtime
+    namespace: hunsy-bot
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
+    # Manual sync during cross-namespace PVC migration; re-enable after verification.
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
