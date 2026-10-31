@@ -1,0 +1,5 @@
+apiVersion: v2
+name: hunsy-bot-namespace
+description: Shared namespace for the homelab bots (secrets are managed out of Git).
+type: application
+version: 0.1.0
